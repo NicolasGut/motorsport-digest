@@ -8,6 +8,8 @@ import pandas as pd
 from datetime import datetime, timedelta
 import sqlite3
 import os
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 # ============================================
 # SOURCES RSS - Motorsport
