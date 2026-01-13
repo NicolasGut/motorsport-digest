@@ -444,22 +444,23 @@ Merci à tous les contributeurs de bibliothèques Python qui rendent ce projet p
 
 ## 👤 Auteur
 
-**[Votre Nom]**
+**Nicolas Gut**
 
+- 🎨 UI/UX Designer
 - 🏎️ Data Analyst Motorsport
-- 💼 LinkedIn : [Votre profil](https://linkedin.com/in/votre-profil)
-- 🐙 GitHub : [@votre-username](https://github.com/votre-username)
-- 🌐 Portfolio : [votre-site.github.io](https://votre-site.github.io)
-- 📧 Email : votre.email@example.com
+- 💼 LinkedIn : [Nicolas Gut] (https://www.linkedin.com/in/nicolasgut/)
+- 🐙 GitHub : [@NicolasGut](https://github.com/NicolasGut)
+- 🌐 Portfolio : [NicolasGut.github.io](https://NicolasGut.github.io)
+- 📧 Email : mail@nicolasgut.com
 
 ---
 
 ## 📊 Stats Projet
 
-![GitHub stars](https://img.shields.io/github/stars/[username]/motorsport-digest?style=social)
-![GitHub forks](https://img.shields.io/github/forks/[username]/motorsport-digest?style=social)
-![GitHub issues](https://img.shields.io/github/issues/[username]/motorsport-digest)
-![GitHub last commit](https://img.shields.io/github/last-commit/[username]/motorsport-digest)
+![GitHub stars](https://img.shields.io/github/stars/NicolasGut/motorsport-digest?style=social)
+![GitHub forks](https://img.shields.io/github/forks/NicolasGut/motorsport-digest?style=social)
+![GitHub issues](https://img.shields.io/github/issues/NicolasGut/motorsport-digest)
+![GitHub last commit](https://img.shields.io/github/last-commit/NicolasGut/motorsport-digest)
 
 ---
 
