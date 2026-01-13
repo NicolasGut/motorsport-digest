@@ -13,8 +13,61 @@ except ImportError:
     NEWSPAPER_AVAILABLE = False
     print("⚠️  newspaper3k/4k not available, using BeautifulSoup fallback")
 
+# Importer requests et BeautifulSoup même si newspaper est disponible
+import requests
+from bs4 import BeautifulSoup
 import time
 from datetime import datetime
+import random
+
+# ============================================
+# HEADERS SOPHISTIQUÉS - Anti-bot detection
+# ============================================
+
+# Liste de User-Agents réalistes (rotation aléatoire)
+USER_AGENTS = [
+    # Chrome Windows
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+    
+    # Chrome macOS
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+    
+    # Firefox Windows
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0',
+    
+    # Firefox macOS
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0',
+    
+    # Safari macOS
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
+    
+    # Edge Windows
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0',
+]
+
+def get_random_headers():
+    """
+    Générer headers sophistiqués avec User-Agent aléatoire
+    """
+    headers = {
+        'User-Agent': random.choice(USER_AGENTS),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9,fr;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Cache-Control': 'max-age=0',
+        'Referer': 'https://www.google.com/',
+    }
+    return headers
 
 
 def extract_full_article(url):
@@ -39,7 +92,15 @@ def _extract_with_newspaper(url):
     
     try:
         article = Article(url)
-        article.download()
+        
+        # Configuration avec headers sophistiqués
+        article.config.browser_user_agent = random.choice(USER_AGENTS)
+        article.config.request_timeout = 15
+        article.config.number_threads = 1
+        article.config.memoize_articles = False
+        
+        # Headers additionnels pour newspaper
+        article.download(input_html=None, config=article.config)
         article.parse()
         
         return {
@@ -53,19 +114,20 @@ def _extract_with_newspaper(url):
         }
         
     except Exception as e:
-        print(f"  ⚠️  Failed to extract {url}: {e}")
-        return None
+        # Si newspaper échoue, essayer avec requests + headers
+        print(f"  ⚠️  Newspaper failed, trying with custom headers...")
+        return _extract_with_custom_headers(url)
 
 
-def _extract_with_beautifulsoup(url):
-    """Extraction basique avec BeautifulSoup (fallback)"""
-    
+def _extract_with_custom_headers(url):
+    """
+    Extraction avec requests + headers sophistiqués (pour contourner CloudFront)
+    """
     try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-        }
+        headers = get_random_headers()
         
-        response = requests.get(url, headers=headers, timeout=10)
+        # Requête avec headers sophistiqués
+        response = requests.get(url, headers=headers, timeout=15, allow_redirects=True)
         response.raise_for_status()
         
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -77,11 +139,41 @@ def _extract_with_beautifulsoup(url):
         elif soup.find('title'):
             title = soup.find('title').get_text(strip=True)
         
-        # Extraire texte (approximatif)
-        # Chercher balises article, main, ou tous les paragraphes
-        article_tag = soup.find('article') or soup.find('main') or soup
-        paragraphs = article_tag.find_all('p')
-        text = '\n'.join([p.get_text(strip=True) for p in paragraphs])
+        # Extraire texte (chercher dans plusieurs conteneurs possibles)
+        text = ''
+        
+        # Essayer différents sélecteurs communs
+        content_selectors = [
+            'article',
+            'main',
+            '[class*="article-content"]',
+            '[class*="post-content"]',
+            '[class*="entry-content"]',
+            '[itemprop="articleBody"]',
+            '.article-body',
+            '.story-body',
+            '.content',
+        ]
+        
+        for selector in content_selectors:
+            container = soup.select_one(selector)
+            if container:
+                paragraphs = container.find_all('p')
+                if paragraphs:
+                    text = '\n'.join([p.get_text(strip=True) for p in paragraphs if len(p.get_text(strip=True)) > 50])
+                    if text:
+                        break
+        
+        # Fallback : tous les paragraphes
+        if not text:
+            paragraphs = soup.find_all('p')
+            text = '\n'.join([p.get_text(strip=True) for p in paragraphs if len(p.get_text(strip=True)) > 50])
+        
+        # Extraire image
+        top_image = ''
+        img_tag = soup.find('meta', property='og:image')
+        if img_tag:
+            top_image = img_tag.get('content', '')
         
         return {
             'url': url,
@@ -89,13 +181,18 @@ def _extract_with_beautifulsoup(url):
             'text': text,
             'authors': [],
             'publish_date': None,
-            'top_image': '',
+            'top_image': top_image,
             'extracted_at': datetime.now().isoformat()
         }
         
     except Exception as e:
-        print(f"  ⚠️  Failed to extract {url}: {e}")
+        print(f"  ❌ Custom headers failed: {e}")
         return None
+
+
+def _extract_with_beautifulsoup(url):
+    """Extraction basique avec BeautifulSoup (fallback)"""
+    return _extract_with_custom_headers(url)
 
 
 def extract_batch_articles(urls, delay=1, max_articles=None):

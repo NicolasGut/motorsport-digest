@@ -5,9 +5,13 @@ Récupère et agrège les flux RSS des sources motorsport
 
 import feedparser
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import sqlite3
 import os
+
+# ============================================
+# FIX SSL pour macOS (développement local)
+# ============================================
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -16,32 +20,42 @@ ssl._create_default_https_context = ssl._create_unverified_context
 # ============================================
 
 RSS_FEEDS = {
-    # F1 - Sources officielles
+    # ============================================
+    # F1 - Sources officielles et majeures
+    # ============================================
     'F1_Official': 'https://www.formula1.com/en/latest/all.xml',
-    
-    # WEC / Endurance
-    'FIA_WEC': 'https://www.fiawec.com/en/rss',
-    
-    # Médias spécialisés majeurs
     'Autosport': 'https://www.autosport.com/rss/feed/all',
     'The_Race': 'https://www.the-race.com/feed/',
     'Motorsport_com': 'https://www.motorsport.com/rss/all/news/',
     'RaceFans': 'https://www.racefans.net/feed/',
     
-    # Technique
-    'F1_Technical': 'https://www.f1technical.net/rss',
+    # ============================================
+    # F1 - Sources complémentaires
+    # ============================================
+    'PlanetF1': 'https://www.planetf1.com/feed/',
+    'GPBlog': 'https://www.gpblog.com/en/rss/news.xml',
+    'Crash_F1': 'https://www.crash.net/rss/f1',
     
-    # Vous pouvez ajouter d'autres sources ici
-    # 'Votre_Source': 'https://example.com/rss',
+    # ============================================
+    # WEC / ENDURANCE - Sources RSS (Alternative)
+    # ============================================
+    'Autosport_WEC': 'https://www.autosport.com/wec/rss',
+    'Motorsport_WEC': 'https://www.motorsport.com/wec/rss/news/',
+    
+    # ============================================
+    # Note: FIA_WEC officiel sera scrapé via web_scraper.py
+    # F1_Technical sera scrapé via web_scraper.py
+    # ============================================
 }
 
 
-def fetch_rss_feeds(feeds_dict=None):
+def fetch_rss_feeds(feeds_dict=None, include_scraped=True):
     """
-    Récupérer tous les flux RSS
+    Récupérer tous les flux RSS + sources scrapées
     
     Args:
         feeds_dict: Dictionnaire optionnel de feeds (utilise RSS_FEEDS par défaut)
+        include_scraped: Inclure sources scrapées (WEC, F1Tech)
     
     Returns:
         DataFrame avec tous les articles
@@ -82,7 +96,21 @@ def fetch_rss_feeds(feeds_dict=None):
         except Exception as e:
             print(f"❌ Error: {e}")
     
-    print(f"\n✅ Total: {len(articles)} articles fetched\n")
+    print(f"\n✅ RSS Total: {len(articles)} articles fetched")
+    
+    # Ajouter sources scrapées (WEC, F1 Technical)
+    if include_scraped:
+        try:
+            from .web_scraper import scrape_all_sources
+            scraped_articles = scrape_all_sources()
+            articles.extend(scraped_articles)
+            print(f"✅ Combined Total (RSS + Scraped): {len(articles)} articles\n")
+        except ImportError:
+            print("⚠️  web_scraper module not found, skipping scraped sources\n")
+        except Exception as e:
+            print(f"⚠️  Scraping failed: {e}\n")
+    else:
+        print()
     
     return pd.DataFrame(articles)
 
@@ -90,6 +118,13 @@ def fetch_rss_feeds(feeds_dict=None):
 def filter_recent_articles(df, hours=168):
     """
     Filtrer articles récents (par défaut 7 jours = 168h)
+    
+    Args:
+        df: DataFrame avec articles
+        hours: Nombre d'heures à garder
+    
+    Returns:
+        DataFrame filtré
     """
     
     if df.empty:
@@ -98,14 +133,13 @@ def filter_recent_articles(df, hours=168):
     
     print(f"🔍 Filtering articles from last {hours} hours ({hours//24} days)...")
     
-    # Parser dates (formats variés selon sources)
+    # Parser dates (formats variés selon sources) - AVEC UTC
     df['published_dt'] = pd.to_datetime(df['published'], errors='coerce', utc=True)
     
     # Garder articles avec date valide
     df_with_date = df[df['published_dt'].notna()].copy()
     
-    # Filtrer par date (avec timezone UTC)
-    from datetime import timezone
+    # Filtrer par date - AVEC UTC
     cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
     recent = df_with_date[df_with_date['published_dt'] >= cutoff].copy()
     

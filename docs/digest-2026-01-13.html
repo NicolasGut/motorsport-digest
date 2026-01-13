@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Revue hebdomadaire motorsport - Analyses data-driven F1, WEC, sport automobile">
+    <meta name="author" content="Data Analyst Motorsport">
+    <title>Revue Motorsport - 06/01/2026</title>
+    <style>
+        /* ============================================
+           GLOBAL STYLES
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 
+                         system-ui, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+        
+        /* ============================================
+           HEADER
+           ============================================ */
+        header {
+            background: linear-gradient(135deg, #E10600, #8B0000);
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(225, 6, 0, 0.3);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+        
+        .subtitle {
+            opacity: 0.95;
+            margin-top: 0.8rem;
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+        
+        .stats {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .stat-item strong {
+            font-weight: 600;
+        }
+        
+        /* ============================================
+           ARTICLES
+           ============================================ */
+        .article {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 1.8rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid transparent;
+        }
+        
+        .article:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            border-left-color: #E10600;
+        }
+        
+        .article-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1.2rem;
+            gap: 1rem;
+        }
+        
+        .article-title {
+            flex: 1;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0;
+            line-height: 1.3;
+        }
+        
+        .article-title a {
+            color: #E10600;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .article-title a:hover {
+            color: #8B0000;
+            text-decoration: underline;
+        }
+        
+        .relevance-badge {
+            background: linear-gradient(135deg, #E10600, #C00500);
+            color: white;
+            padding: 0.4rem 0.9rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(225, 6, 0, 0.3);
+        }
+        
+        .relevance-badge.high {
+            background: linear-gradient(135deg, #E10600, #FF0800);
+        }
+        
+        .relevance-badge.medium {
+            background: linear-gradient(135deg, #FF8C00, #FFA500);
+        }
+        
+        .relevance-badge.low {
+            background: linear-gradient(135deg, #808080, #A0A0A0);
+        }
+        
+        .article-meta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            color: #666;
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+        }
+        
+        .source-tag {
+            display: inline-block;
+            background: #f0f0f0;
+            color: #555;
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .date-tag {
+            color: #888;
+            font-size: 0.85rem;
+        }
+        
+        .article-summary {
+            line-height: 1.7;
+            color: #333;
+            font-size: 1.05rem;
+        }
+        
+        /* ============================================
+           FOOTER
+           ============================================ */
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2.5rem;
+            border-top: 2px solid #ddd;
+            color: #666;
+        }
+        
+        .cta {
+            background: linear-gradient(135deg, #E10600, #8B0000);
+            color: white;
+            padding: 1.2rem 2.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1.5rem;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(225, 6, 0, 0.3);
+        }
+        
+        .cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(225, 6, 0, 0.4);
+        }
+        
+        .footer-meta {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #999;
+        }
+        
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .article-header {
+                flex-direction: column;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .article {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📰 Revue Motorsport</h1>
+        <p class="subtitle">
+            Semaine du 06/01/2026 au 13/01/2026
+        </p>
+        <div class="stats">
+            <div class="stat-item">
+                <strong>15</strong> articles sélectionnés
+            </div>
+            <div class="stat-item">
+                <strong>Sources fiables</strong> F1 · WEC · Technique
+            </div>
+            <div class="stat-item">
+                <strong>Analyse data-driven</strong> + IA
+            </div>
+        </div>
+    </header>
+    
+    <main>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.motorsport.com/wrc/news/how-elfyn-evans-plans-to-finally-achieve-rallyings-holy-grail/10789648/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=www" target="_blank" rel="noopener">
+                        How Elfyn Evans plans to finally achieve rallying’s holy grail
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Motorsport_com</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                Elfyn Evans, quintuple vice-champion du monde WRC, analyse sa défaite de quatre points face à Sébastien Ogier en 2025 pour préparer sa sixième tentative de titre en 2026. Le pilote Toyota a identifié une approche trop calculée en début de saison face au programme partiel d'Ogier comme principal facteur d'amélioration.
+
+Evans, seul pilote à avoir terminé dans le top 6 sur les 14 manches 2025 avec deux victoires, reconnaît avoir sous-estimé l'impact du calendrier réduit de son coéquipier (11 rallyes contre 14). Pour 2026, où Ogier ne disputera que 10 manches, le Gallois envisage une stratégie plus agressive dès le début de saison, tout en conservant sa consistance légendaire qui lui a permis de mener le championnat après 10 des 14 épreuves l'an passé.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.autosport.com/wrc/news/elfyn-evans-wrc-2026-title/10789694/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=uk" target="_blank" rel="noopener">
+                        How five-time runner-up Evans plans to finally become WRC champion
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Autosport</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                Elfyn Evans, quintuple vice-champion du monde WRC, analyse sa défaite de 4 points face à son coéquipier Toyota Sébastien Ogier lors de la saison 2025. Le Gallois, qui a terminé dans le top 6 sur les 14 manches et mené le championnat après 10 épreuves, identifie des axes d'amélioration pour 2026.
+
+Evans reconnaît avoir adopté une approche trop calculée en début de saison face à Ogier, qui ne disputait qu'un programme partiel. Pour 2026, où le Français ne participera qu'à 10 rallyes (un de moins), Evans envisage d'ajuster sa stratégie dès les premières manches. Le pilote Toyota mise sur sa constance démontrée - aucun abandon majeur en 2025 - tout en cherchant à optimiser sa prise de risques dans les moments clés pour décrocher son premier titre mondial.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.motorsport.com/f1/news/nico-rosberg-closes-100m-fund-as-he-thanks-f1-lessons-for-vc-performance/10789547/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=www" target="_blank" rel="noopener">
+                        Nico Rosberg closes $100m fund as he thanks F1 lessons for incredible VC performance
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Motorsport_com</span>
+                <span class="date-tag">📅 Mon, 12 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **Nico Rosberg lève 100 millions de dollars pour son troisième fonds d'investissement**
+
+L'ancien champion de F1 2016 a clôturé avec succès la levée de fonds de Rosberg Ventures, portant les actifs sous gestion de sa société de capital-risque à plus de 200 millions de dollars. Fondée après son titre mondial, l'entreprise investit directement dans des startups technologiques, notamment dans l'intelligence artificielle et les logiciels d'analyse de données comme ClickHouse.
+
+Rosberg attribue sa performance d'investisseur aux leçons apprises en F1, particulièrement la gestion des risques et la préparation minutieuse des scénarios d'échec. Sa stratégie consiste à "saisir les opportunités à faible probabilité mais à fort potentiel", une approche qu'il compare à l'attaque en course automobile. Parallèlement à ses activités d'investissement, l'Allemand continue son travail de consultant pour Sky Sports F1 et gère une chaîne YouTube comptant près de 1,5 million d'abonnés.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.crash.net/f1/news/1088421/1/why-mclaren-believe-2025-errors-will-make-f1-team-stronger" target="_blank" rel="noopener">
+                        Why McLaren believe 2025 errors will make F1 team stronger
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Crash_F1</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                McLaren a remporté son deuxième titre constructeur consécutif en 2025 avec six courses d'avance, Lando Norris décrochant également son premier championnat pilote. Malgré cette domination, l'équipe britannique a commis plusieurs erreurs coûteuses : double disqualification à Las Vegas, victoire gâchée au Qatar, et problèmes de fiabilité qui ont maintenu Verstappen dans la course au titre jusqu'à Abu Dhabi.
+
+Le patron Zak Brown reconnaît ces défaillances dans une lettre ouverte aux fans, soulignant que ces "leçons apprises" renforceront l'équipe pour l'avenir. McLaren se prépare désormais au changement réglementaire majeur de 2026, conscient que le statut de champion en titre comptera peu face à cette remise à zéro technique complète du plateau.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.motorsport.com/f1/news/f1-2025-mistakes-made-mclaren-better-as-a-team-says-brown/10789641/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=www" target="_blank" rel="noopener">
+                        “S*** happens” – how 2025 mistakes made McLaren a stronger F1 team
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Motorsport_com</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **McLaren tire les leçons de ses erreurs 2025**
+
+Zak Brown, patron de McLaren, affirme que les erreurs commises lors de la saison 2025 de F1 renforceront l'équipe à long terme. Malgré un deuxième titre constructeurs consécutif acquis dès Singapour, McLaren a failli perdre le championnat pilotes face à Max Verstappen, ne l'emportant qu'à deux points près grâce à Lando Norris.
+
+Les erreurs stratégiques incluent une double disqualification à Las Vegas pour usure excessive des planches, un mauvais choix stratégique au Qatar (non-arrêt sous safety car), ainsi que plusieurs arrêts aux stands ratés. Brown souligne que ces difficultés ont fourni "des leçons précieuses" et que l'équipe "apprend rapidement". Avec les nouvelles réglementations 2026 qui remettent les compteurs à zéro, McLaren mise sur l'expérience acquise par Oscar Piastri pour aborder cette transition.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.racefans.net/2026/01/13/cadillac-reveal-barcelona-shakedown-livery-for-new-teams-first-f1-test/" target="_blank" rel="noopener">
+                        Cadillac reveal ‘Barcelona shakedown livery’ for new team’s first F1 test | Formula 1
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">RaceFans</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **Cadillac dévoile sa livrée d'essais pour ses débuts en F1**
+
+Cadillac a présenté la livrée noire et argent que portera sa première monoplace F1 lors des essais de pré-saison à Barcelone le 16 janvier. Cette livrée temporaire, baptisée "Barcelona shakedown livery", arbore les noms des membres fondateurs de l'équipe sur le nez et utilise un motif géométrique en finitions mate et brillante pour dissimuler l'aérodynamisme de la voiture.
+
+La première nouvelle écurie F1 depuis 10 ans présentera sa livrée de course définitive pour la saison 2026 le 8 février prochain. Le design monochrome s'inspire de l'écusson Cadillac traditionnel tout en adoptant une esthétique technique moderne, reflétant les ambitions de performance de General Motors au plus haut niveau du sport automobile mondial.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.autosport.com/f1/news/f1-2025-mistakes-made-mclaren-better-as-a-team-says-brown/10789636/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=uk" target="_blank" rel="noopener">
+                        F1 2025 mistakes made McLaren "better as a team", says Brown
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Autosport</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **McLaren assume ses erreurs 2025 et vise l'amélioration**
+
+Zak Brown, patron de McLaren, reconnaît que son équipe a commis plusieurs erreurs cruciales lors de la saison 2025 F1, malgré un deuxième titre constructeurs consécutif et un premier titre pilotes depuis 2008. Les principales défaillances incluent une double disqualification à Las Vegas pour usure excessive des planches, une erreur stratégique au Qatar (non-arrêt sous safety car), et plusieurs arrêts lents aux stands.
+
+McLaren a également maintenu la compétition interne entre Norris et Piastri jusqu'à la fin, permettant à Verstappen de revenir dans la course au titre. Norris l'a finalement emporté de seulement deux points à Abu Dhabi. Brown souligne que ces erreurs constituent des "leçons précieuses" qui renforceront l'équipe, particulièrement en vue des nouveaux règlements techniques 2026.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.racefans.net/2026/01/13/doohan-exits-alpine-eight-months-after-being-dropped-from-race-team/" target="_blank" rel="noopener">
+                        Doohan exits Alpine eight months after being dropped from race team | Formula 1
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">RaceFans</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **Alpine officialise la séparation avec Jack Doohan**
+
+Alpine a confirmé mardi la fin de sa collaboration avec Jack Doohan, huit mois après l'avoir écarté de l'équipe de course. Le pilote australien avait disputé seulement sept Grands Prix pour l'écurie française, débutant lors de la dernière course 2024 avant d'être remplacé par Franco Colapinto après Miami 2025.
+
+Premier diplômé de l'Alpine Academy à accéder à un baquet en F1, Doohan n'avait inscrit aucun point lors de ses sept apparitions, contrairement à son coéquipier Pierre Gasly qui totalisait sept unités au moment de son éviction. Colapinto, malgré son expérience de neuf courses chez Williams, n'a pas non plus marqué sur les 18 dernières manches, Alpine terminant dernier du championnat constructeurs. Doohan a récemment effectué des essais en Super Formula japonaise chez Kondo.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.motorsport.com/general/news/five-drivers-join-more-than-equal-development-programme/10789530/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=www" target="_blank" rel="noopener">
+                        Five drivers join More Than Equal development programme
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Motorsport_com</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **Cinq nouvelles pilotes rejoignent le programme More Than Equal**
+
+More Than Equal, programme de développement fondé par Karel Komarek et David Coulthard, a sélectionné cinq nouvelles pilotes : Alexia Danielsson, Amelia Wyszomirska, Gianna Pascoal, Julia Angelard et Zoe Florescu-Potolea. Elles rejoignent les trois pilotes actuelles (Ivonn Simeonova, Lana Flack et Skye Parker) dans ce programme visant à développer la première championne du monde de Formule 1.
+
+La sélection s'appuie sur un système de classement mondial basé sur les données, évaluant les performances de conduite, les capacités physiques, la préparation psychologique et le potentiel de développement. Le programme se concentre sur la transition critique du karting vers les monoplaces, offrant un encadrement technique, tactique et mental inspiré des modèles olympiques. Cette approche structurée vise à créer un pipeline durable de talents féminins dans le sport automobile de haut niveau.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.motorsport.com/f1/news/how-more-aggressive-e-fuels-and-advanced-additives-will-have-unexpected-effects-in-f1-2026/10789676/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=www" target="_blank" rel="noopener">
+                        How more aggressive e-fuels and advanced additives will have unexpected effects in F1 2026
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Motorsport_com</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **F1 2026 : Les e-carburants durables imposent une révolution technique**
+
+La Formule 1 2026 introduit un changement de paradigme majeur avec le passage aux carburants 100% durables et un nouveau système de mesure du débit. Le paramètre de référence évolue de la masse (kg/h) vers le contenu énergétique, avec une limite fixée à 3000 MJ/h calculée par l'ECU selon la densité énergétique de chaque carburant.
+
+Cette transition pose des défis techniques considérables : les e-carburants sont chimiquement plus agressifs que les carburants traditionnels, contraignant Allengra (fabricant des débitmètres homologués) à repenser entièrement ses composants. L'entreprise a dû adopter l'acier inoxydable pour les boîtiers, minimiser les joints d'étanchéité et développer de nouveaux connecteurs résistants, car les matériaux compatibles avec les carburants conventionnels ne supportent pas la corrosivité des e-carburants sur la durée.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.autosport.com/f1/news/f1-2026-efuels-advanced-additives/10789765/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=uk" target="_blank" rel="noopener">
+                        How e-fuels and advanced additives will be an F1 2026 development battleground
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Autosport</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **F1 2026 : Les e-carburants, nouveau terrain de bataille technologique**
+
+À partir de 2026, la F1 passera aux carburants 100% durables avec un système de mesure révolutionnaire : la FIA contrôlera désormais le flux énergétique (3000 MJ/h maximum) plutôt que la masse de carburant, via l'ECU qui convertira directement les données en temps réel selon la densité énergétique certifiée de chaque carburant.
+
+Cette transition impose des défis techniques majeurs, notamment pour les débitmètres homologués d'Allengra qui doivent résister à la chimie plus agressive des e-carburants. L'entreprise a dû repenser entièrement ses matériaux (acier inoxydable, connecteurs étanches) et minimiser les joints d'étanchéité, car les composants traditionnels se dégradent après 5-10 courses avec ces nouveaux carburants.
+
+Ce changement de paradigme ouvre un nouveau front de développement pour les équipes dans l'optimisation des additifs et la composition chimique des carburants.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.autosport.com/general/news/five-drivers-join-more-than-equal-development-programme/10789524/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=uk" target="_blank" rel="noopener">
+                        Five drivers join More Than Equal development programme
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Autosport</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **Cinq nouvelles pilotes rejoignent le programme More Than Equal**
+
+More Than Equal, programme de développement fondé par Karel Komarek et David Coulthard, a sélectionné cinq nouvelles pilotes : Alexia Danielsson, Amelia Wyszomirska, Gianna Pascoal, Julia Angelard et Zoe Florescu-Potolea. Elles rejoignent le trio existant composé d'Ivonn Simeonova, Lana Flack et Skye Parker.
+
+Le processus de sélection repose sur un système de classement mondial basé sur les données, évaluant les performances de conduite, les capacités physiques, la préparation psychologique et le potentiel de développement à long terme. Le programme vise à identifier et former la première championne du monde féminine de Formule 1, en se concentrant sur la transition critique du karting aux monoplaces. Chaque pilote bénéficie d'un encadrement technique, tactique, physique et mental, inspiré des modèles olympiques de haute performance.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.racefans.net/2026/01/13/ticktum-describes-rivals-as-a-lickers-in-social-media-rant-over-deleted-comment/" target="_blank" rel="noopener">
+                        Ticktum describes rivals as ‘a*** lickers’ in social media rant over deleted comment | Formula 1
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">RaceFans</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **Dan Ticktum critique Autosport et ses rivaux après la suppression d'un commentaire**
+
+Le pilote de Formule E Dan Ticktum s'est emporté contre le média Autosport qui a supprimé un de ses commentaires critiquant un article le concernant. Ticktum accuse la publication de déformer ses propos et de créer une "narrative" en sortant ses citations de leur contexte. Il reproche également à ses rivaux pilotes de ne pas oser critiquer publiquement les médias spécialisés.
+
+Dans son commentaire supprimé puis republié, Ticktum défendait sa position sur les problèmes actuels de la Formule E, notamment le manque de pénalités et l'excès de gestion d'énergie qui rend selon lui les courses trop stratégiques et dépendantes de la chance plutôt que du talent pur. Le pilote britannique, qui avait été banni un an en 2015 pour un crash volontaire, estime être le seul à oser critiquer publiquement ces dysfonctionnements.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.motorsport.com/dakar/news/naturally-aspirated-v8-instead-of-turbo-what-ford-is-doing-differently-at-the-dakar/10789491/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=www" target="_blank" rel="noopener">
+                        Naturally-aspirated V8: What Ford is doing differently at the 2026 Dakar
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Motorsport_com</span>
+                <span class="date-tag">📅 Mon, 12 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                Ford adopte une approche technique distincte pour le Dakar 2026 avec son Raptor T1+, équipé d'un moteur V8 Coyote de 5,0 litres à aspiration naturelle, contrairement à ses concurrents Dacia et Toyota qui utilisent des V6 turbocompressés. Initialement conçu pour fonctionner avec un restricteur d'air, le projet a dû s'adapter aux nouvelles réglementations imposant un capteur de couple, mais les tests ont validé cette configuration.
+
+L'avantage principal réside dans la simplicité et la fiabilité : absence de turbo et d'intercooler, génération de chaleur réduite et températures habitacle plus basses. Sous les restrictions réglementaires actuelles (courbe de couple imposée, vitesse limitée à 170 km/h), ce V8 de 268-270 kW ne présente aucun désavantage de performance face aux moteurs turbo plus petits, tout en offrant une robustesse cruciale pour l'endurance du Dakar.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.autosport.com/wec/news/mclaren-jensen-wec-2027-hypercar/10789680/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=uk" target="_blank" rel="noopener">
+                        McLaren signs Jensen for WEC 2027 Hypercar programme
+                    </a>
+                </h2>
+                <span class="relevance-badge high">95</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Autosport</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                McLaren a officialisé l'engagement du pilote danois Mikkel Jensen comme premier recrutement pour son programme Hypercar WEC prévu en 2027. L'ancien pilote Peugeot, âgé de 31 ans et fort de trois podiums en 26 départs en catégorie Hypercar, pilotera pour United Autosports tout en participant au développement du prototype LMDh basé sur un châssis Dallara et motorisé par un V6 biturbo hybride.
+
+Cette entrée en WEC permettra à McLaren de concourir simultanément dans trois des plus grandes catégories mondiales : Formule 1, IndyCar et WEC. United Autosports, co-détenue par le PDG de McLaren Racing Zak Brown, se concentrera sur ce programme Hypercar après avoir cédé ses activités LMGT3 à Garage 59 en 2026.
+            </div>
+        </article>
+
+    </main>
+    
+    <footer>
+        <p style="font-size: 1.1rem; margin-bottom: 1rem;">
+            Revue hebdomadaire automatisée · Veille motorsport data-driven
+        </p>
+        
+        <a href="https://github.com/[votre-username]/motorsport-digest" class="cta">
+            🏎️ Voir le projet GitHub
+        </a>
+        
+        <p class="footer-meta">
+            Généré automatiquement le 13/01/2026 à 20:31
+            <br>
+            Powered by Python · Claude API · FastF1 · GitHub Actions
+        </p>
+        
+        <p style="margin-top: 2rem; font-size: 0.85rem; color: #aaa;">
+            Motorsport Digest · Data Analytics Motorsport
+            <br>
+            <a href="index.html" style="color: #E10600; text-decoration: none;">
+                📚 Voir toutes les archives
+            </a>
+        </p>
+    </footer>
+</body>
+</html>
