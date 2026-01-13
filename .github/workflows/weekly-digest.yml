@@ -1,0 +1,93 @@
+name: Weekly Motorsport Digest
+
+on:
+  # Exécution automatique tous les dimanches à 18h UTC
+  schedule:
+    - cron: '0 18 * * 0'  # 18h UTC = 19h Paris hiver, 20h Paris été
+  
+  # Permettre exécution manuelle
+  workflow_dispatch:
+
+jobs:
+  generate-digest:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # ============================================
+    # 1. CHECKOUT REPOSITORY
+    # ============================================
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Récupérer tout l'historique
+    
+    # ============================================
+    # 2. SETUP PYTHON
+    # ============================================
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'  # Cache des dépendances
+    
+    # ============================================
+    # 3. INSTALL DEPENDENCIES
+    # ============================================
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    # ============================================
+    # 4. VERIFY ENVIRONMENT
+    # ============================================
+    - name: Verify installation
+      run: |
+        python --version
+        pip list
+        echo "✅ Dependencies installed"
+    
+    # ============================================
+    # 5. RUN MAIN PIPELINE
+    # ============================================
+    - name: Generate weekly digest
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      run: |
+        echo "🏎️  Starting digest generation..."
+        python veille_motorsport/main.py --days 7 --max-summaries 15 --lang fr
+        echo "✅ Digest generated"
+    
+    # ============================================
+    # 6. COMMIT & PUSH RESULTS
+    # ============================================
+    - name: Commit and push digest
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "GitHub Actions Bot"
+        
+        # Ajouter fichiers générés
+        git add docs/
+        git add data/veille_motorsport.db || true  # Base de données (optionnel)
+        
+        # Commit avec date
+        DIGEST_DATE=$(date +'%Y-%m-%d %H:%M')
+        git commit -m "📰 Weekly digest: $DIGEST_DATE" || echo "No changes to commit"
+        
+        # Push
+        git push
+    
+    # ============================================
+    # 7. NOTIFICATION (optionnel)
+    # ============================================
+    - name: Success notification
+      if: success()
+      run: |
+        echo "✅ Digest successfully generated and published!"
+        echo "🌐 View at: https://${{ github.repository_owner }}.github.io/motorsport-digest/"
+    
+    - name: Failure notification
+      if: failure()
+      run: |
+        echo "❌ Digest generation failed!"
+        echo "Check logs above for details"
