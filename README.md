@@ -448,7 +448,7 @@ Merci à tous les contributeurs de bibliothèques Python qui rendent ce projet p
 
 - 🎨 UI/UX Designer
 - 🏎️ Data Analyst Motorsport
-- 💼 LinkedIn : [Nicolas Gut] (https://www.linkedin.com/in/nicolasgut/)
+- 💼 LinkedIn : [Nicolas Gut](https://www.linkedin.com/in/nicolasgut/)
 - 🐙 GitHub : [@NicolasGut](https://github.com/NicolasGut)
 - 🌐 Portfolio : [NicolasGut.github.io](https://NicolasGut.github.io)
 - 📧 Email : mail@nicolasgut.com
