@@ -90,13 +90,6 @@ def fetch_rss_feeds(feeds_dict=None):
 def filter_recent_articles(df, hours=168):
     """
     Filtrer articles récents (par défaut 7 jours = 168h)
-    
-    Args:
-        df: DataFrame avec articles
-        hours: Nombre d'heures à garder
-    
-    Returns:
-        DataFrame filtré
     """
     
     if df.empty:
@@ -106,13 +99,14 @@ def filter_recent_articles(df, hours=168):
     print(f"🔍 Filtering articles from last {hours} hours ({hours//24} days)...")
     
     # Parser dates (formats variés selon sources)
-    df['published_dt'] = pd.to_datetime(df['published'], errors='coerce')
+    df['published_dt'] = pd.to_datetime(df['published'], errors='coerce', utc=True)
     
     # Garder articles avec date valide
     df_with_date = df[df['published_dt'].notna()].copy()
     
-    # Filtrer par date
-    cutoff = datetime.now() - timedelta(hours=hours)
+    # Filtrer par date (avec timezone UTC)
+    from datetime import timezone
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
     recent = df_with_date[df_with_date['published_dt'] >= cutoff].copy()
     
     # Trier par date (plus récent en premier)
