@@ -80,27 +80,44 @@ Instructions:
 Summary:"""
     
     try:
-        # Créer client Claude - version simple sans proxies
-        client = anthropic.Anthropic(
-            api_key=api_key,
-            max_retries=2,
-            timeout=30.0
-        )
+        # Créer client Claude - ultra-compatible GitHub Actions
+        # Éviter tout kwargs qui pourrait être injecté par l'environnement
+        import os
         
-        # Appel API
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",  # Dernière version Sonnet
-            max_tokens=300,
-            temperature=0.7,  # Un peu de créativité mais restant factuel
+        # Nettoyer env variables proxy qui pourraient interférer
+        old_http_proxy = os.environ.pop('HTTP_PROXY', None)
+        old_https_proxy = os.environ.pop('HTTPS_PROXY', None)
+        old_http_proxy_lower = os.environ.pop('http_proxy', None)
+        old_https_proxy_lower = os.environ.pop('https_proxy', None)
+        
+        try:
+            # Créer client avec seulement les params essentiels
+            client = anthropic.Anthropic(api_key=api_key)
+            
+            # Appel API
+            message = client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=300,
+                temperature=0.7,
             messages=[
                 {"role": "user", "content": prompt}
-            ]
-        )
+            )
         
-        # Extraire résumé
-        summary = message.content[0].text.strip()
+            # Extraire résumé
+            summary = message.content[0].text.strip()
+            
+            return summary
         
-        return summary
+        finally:
+            # Restaurer variables proxy
+            if old_http_proxy:
+                os.environ['HTTP_PROXY'] = old_http_proxy
+            if old_https_proxy:
+                os.environ['HTTPS_PROXY'] = old_https_proxy
+            if old_http_proxy_lower:
+                os.environ['http_proxy'] = old_http_proxy_lower
+            if old_https_proxy_lower:
+                os.environ['https_proxy'] = old_https_proxy_lower
         
     except anthropic.AuthenticationError:
         print("❌ Authentication error: Invalid API key")

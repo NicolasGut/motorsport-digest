@@ -53,6 +53,12 @@ jobs:
     - name: Generate weekly digest
       env:
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        # Désactiver proxies qui interfèrent avec Anthropic client
+        HTTP_PROXY: ""
+        HTTPS_PROXY: ""
+        http_proxy: ""
+        https_proxy: ""
+        NO_PROXY: "*"
       run: |
         echo "🏎️  Starting digest generation..."
         
