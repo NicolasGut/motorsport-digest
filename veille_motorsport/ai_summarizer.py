@@ -80,8 +80,12 @@ Instructions:
 Summary:"""
     
     try:
-        # Créer client Claude
-        client = anthropic.Anthropic(api_key=api_key)
+        # Créer client Claude - version simple sans proxies
+        client = anthropic.Anthropic(
+            api_key=api_key,
+            max_retries=2,
+            timeout=30.0
+        )
         
         # Appel API
         message = client.messages.create(

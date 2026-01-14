@@ -20,7 +20,7 @@ pandas==2.1.4
 numpy==1.26.3
 
 # AI Summarization
-anthropic==0.18.1
+anthropic>=0.40.0
 
 # Alternative AI (optional - uncomment if using OpenAI)
 # openai==1.12.0
