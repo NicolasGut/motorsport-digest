@@ -55,8 +55,11 @@ jobs:
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       run: |
         echo "🏎️  Starting digest generation..."
-        python veille_motorsport/main.py --days 7 --max-summaries 15 --lang fr
-        echo "✅ Digest generated"
+        
+        # Run with wrapper for better error handling
+        python run_github_action.py
+        
+        echo "✅ Pipeline completed"
     
     # ============================================
     # 6. COMMIT & PUSH RESULTS
