@@ -1,173 +1,337 @@
 """
-Article Scorer Module
-Score la pertinence des articles selon des mots-clés techniques et thématiques
+Article Scorer v2 - Système de scoring simplifié et efficace
+Principe : FILTRAGE puis SCORING
 """
 
-import pandas as pd
-import re
-
 # ============================================
-# KEYWORDS - Priorités différentes
+# ÉTAPE 1 : FILTRAGE - Sports acceptés/rejetés
 # ============================================
 
-# Mots-clés HAUTE priorité (data/technique)
-KEYWORDS_HIGH_PRIORITY = [
-    # Data & Analytics
-    'data', 'analysis', 'analytics', 'telemetry', 'statistics', 'stats',
-    'données', 'analyse', 'analytique', 'télémétrie', 'statistiques',
+# Sports ACCEPTÉS (périmètre du digest)
+SPORTS_ACCEPTED = [
+    # F1 et formules monoplace
+    'formula 1', 'f1', 'formula one',
+    'formula 2', 'f2',
+    'formula 3', 'f3',
+    'super formula',
+    'f1 academy',
     
-    # Machine Learning & AI
-    'machine learning', 'ml', 'ai', 'artificial intelligence',
-    'intelligence artificielle', 'algorithme', 'algorithm',
-    'prediction', 'prédiction', 'model', 'modèle',
+    # Endurance et GT
+    'wec', 'world endurance', 'le mans', 'lmp', 'hypercar',
+    'gt world challenge', 'gtwc', 'gt3', 'gt4',
+    'imsa', 'gtd', 'gtp',
+    'spa 24', 'nurburgring 24', 'bathurst 12', 'daytona 24', 'rolex 24',
     
-    # Technique & Performance
-    'technical', 'technique', 'engineering', 'ingénierie',
-    'performance', 'simulation', 'development', 'développement',
-    'aérodynamique', 'aerodynamic', 'downforce', 'appui',
-    
-    # Stratégie
-    'strategy', 'stratégie', 'pit stop', 'tire', 'pneu',
-    'fuel', 'carburant', 'undercut', 'overcut',
+    # Formule E (uniquement le terme complet pour éviter faux positifs)
+    'formula e',  # Supprimé 'fe' car trop de faux positifs
 ]
 
-# Mots-clés MOYENNE priorité (sport/général)
-KEYWORDS_MEDIUM_PRIORITY = [
-    # Course & Résultats
-    'race', 'course', 'championship', 'championnat',
-    'qualifying', 'qualifications', 'quali', 'grid',
-    'podium', 'victory', 'victoire', 'win', 'winner',
+# Sports REJETÉS (hors périmètre)
+SPORTS_REJECTED = [
+    # Rally et cross
+    'wrc', 'world rally', 'rallying', 'rally championship',
+    'dakar', 'rally raid',
+    'rallycross',
     
-    # Équipes & Pilotes
-    'driver', 'pilote', 'team', 'écurie', 'équipe',
+    # Moto
+    'motogp', 'moto2', 'moto3',
+    'superbike', 'sbk',
+    'vr46', 'rossi bike', 'rossi team', "rossi's vr46",
+    
+    # IndyCar et ovales US
+    'indycar', 'indy nxt', 'indy 500', 'indianapolis 500',
+    'indy lights',
+    
+    # NASCAR et US
+    'nascar', 'cup series', 'xfinity',
+    'chili bowl',
+    
+    # Karting (sauf si pilote F1/WEC mentionné dans titre)
+    'karting academy', 'karting championship', 'karting series',
+    'opens registrations for', 'karting returns',
+    
+    # Autres
+    'drag racing',
+    'drifting', 'drift championship',
+    'formula student',
+]
+
+# Mots-clés GOSSIP à rejeter (ventes, lifestyle)
+GOSSIP_REJECTED = [
+    # Ventes aux enchères
+    'heads to auction', 'auction with', 'expected to fetch',
+    'auction estimate',
+    
+    # Collectibles et jouets
+    'meccano', 'lego', 'scale model', '1:8-scale', '1:18-scale',
+    'trading card', 'memorabilia',
+    
+    # Lifestyle gossip
+    'spotted driving', 'seen driving', 'rare car',
+    'girlfriend', 'boyfriend', 'dating', 'relationship',
+    'vacation', 'holiday',
+    
+    # Fan gossip & social media drama
+    'fans lose it', 'fans deliver verdict', 'fans erupt',
+    'twitter rant', 'social media rant', 'social media erupts',
+    'describes rivals as', 'calls out', 'slams',
+    
+    # Faits divers
+    'stolen kart', 'kart recovered', 'theft',
+    'round-up:', 'news round-up',
+]
+
+# ============================================
+# ÉTAPE 2 : SCORING - Qualité du contenu
+# ============================================
+
+# NIVEAU 1 - TECHNIQUE & PERFORMANCE (score max : +60)
+KEYWORDS_TECHNICAL = {
+    # Data & IA (poids max)
+    'artificial intelligence': 15,
+    'machine learning': 15,
+    'data analytics': 12,
+    'algorithm': 12,
+    'telemetry': 10,
+    'simulation': 10,
+    'predictive': 10,
+    
+    # Technique pure
+    'aerodynamics': 10,
+    'aero': 8,
+    'downforce': 10,
+    'drag': 8,
+    'ground effect': 10,
+    'suspension': 8,
+    'power unit': 10,
+    'hybrid': 8,
+    'ers': 10,
+    'drs': 8,
+    'tire compound': 10,
+    'tire strategy': 8,
+    'cooling': 8,
+    'reliability': 8,
+    'lap time': 8,
+    'pace': 6,
+    'performance': 6,
+    'development': 6,
+    'testing': 6,
+}
+
+# NIVEAU 2 - BUSINESS & ÉCURIES (score max : +40)
+KEYWORDS_BUSINESS = {
+    # Partenariats et business
+    'partnership': 10,
+    'sponsor': 8,
+    'technical partnership': 12,
+    'deal': 8,
+    'contract': 6,
+    'investment': 10,
+    'funding': 10,
+    'acquisition': 10,
+    
+    # Management et stratégie
+    'team principal': 8,
+    'technical director': 8,
+    'ceo': 8,
+    'strategy': 8,
+    'recruitment': 6,
+    'hiring': 6,
+    
+    # Règlements et innovation
+    'regulation': 8,
+    'technical directive': 10,
+    'efuel': 10,
+    'e-fuel': 10,
+    'sustainability': 8,
+    'carbon neutral': 8,
+}
+
+# NIVEAU 3 - ACTUALITÉS GÉNÉRALES (score max : +20)
+KEYWORDS_GENERAL = {
+    # Design et branding
+    'livery': 6,
+    'design': 5,
+    'branding': 5,
+    
+    # Pilotes et transferts
+    'driver': 4,
+    'signs': 5,
+    'announces': 5,
+    'confirms': 5,
+    
+    # Course
+    'race': 3,
+    'championship': 4,
+    'podium': 3,
+    'victory': 3,
+}
+
+# ÉCURIES - Liste complète pour détection
+TEAMS_F1 = [
     'mercedes', 'ferrari', 'red bull', 'mclaren', 'alpine',
-    'toyota', 'porsche', 'cadillac', 'bmw',
+    'aston martin', 'williams', 'haas', 'sauber', 'stake',
+    'racing bulls', 'rb', 'visa rb', 'cadillac',
+]
+
+TEAMS_WEC_GT = [
+    'toyota', 'ferrari', 'porsche', 'cadillac', 'bmw',
+    'peugeot', 'alpine', 'lamborghini', 'aston martin',
+    'corvette', 'ford',
+]
+
+# CONSTRUCTEURS - Tous les constructeurs majeurs
+CONSTRUCTEURS = [
+    'mercedes', 'ferrari', 'red bull', 'honda', 'renault',
+    'toyota', 'porsche', 'bmw', 'audi', 'lamborghini',
+    'mclaren', 'aston martin', 'ford', 'chevrolet', 'cadillac',
+]
+
+# PILOTES MAJEURS - Top pilotes à suivre
+PILOTES_MAJEURS = [
+    # F1 actuels
+    'verstappen', 'hamilton', 'leclerc', 'norris', 'sainz',
+    'russell', 'alonso', 'piastri', 'perez', 'gasly',
     
-    # Règlements & Changements
-    'regulation', 'règlement', 'rule', 'règle',
-    'technical directive', 'directive technique',
-    'fia', 'steward', 'penalty', 'pénalité',
-]
-
-# Mots-clés BASSE priorité (buzz/rumeurs)
-KEYWORDS_LOW_PRIORITY = [
-    'rumor', 'rumour', 'rumeur', 'gossip',
-    'social media', 'twitter', 'instagram',
-    'celebrity', 'célébrité', 'girlfriend', 'boyfriend',
-]
-
-# Mots-clés NÉGATIFS (à éviter)
-KEYWORDS_NEGATIVE = [
-    'clickbait', 'shocking', 'you won\'t believe',
-    'scandal', 'drama', 'controversy',
-    # Ajouter autres selon vos préférences
+    # F1 légendes/experts
+    'newey', 'adrian newey', 'horner', 'wolff', 'binotto',
+    'vasseur',
+    
+    # WEC/Endurance
+    'kobayashi', 'buemi', 'hartley', 'conway',
+    'pier guidi', 'calado', 'molina',
 ]
 
 
-def score_article_relevance(article_text, article_title, source=''):
+# ============================================
+# FONCTION DE SCORING
+# ============================================
+
+def score_article_v2(article_text, article_title, source=''):
     """
-    Scorer pertinence d'un article (0-100)
+    Scorer un article selon le nouveau système simplifié
+    
+    Logique :
+    1. FILTRAGE : Sport accepté ? Gossip ? → Rejet immédiat (score 0)
+    2. SCORING : Qualité contenu (technique > business > général)
     
     Args:
-        article_text: Texte complet article
-        article_title: Titre article
-        source: Source (optionnel, pour ajustement)
+        article_text: Contenu article
+        article_title: Titre
+        source: Source (optionnel)
     
     Returns:
-        Score de 0 à 100
+        Score 0-100
     """
     
-    if not article_text and not article_title:
-        return 0
-    
-    # Combiner titre et texte (titre pèse plus)
-    text_lower = f"{article_title} {article_title} {article_text}".lower()
+    # Combiner titre + texte (titre compte 2x)
+    text_full = f"{article_title} {article_title} {article_text}".lower()
     title_lower = article_title.lower()
+    
+    # ============================================
+    # ÉTAPE 1 : FILTRAGE BINAIRE
+    # ============================================
+    
+    # 1A. Vérifier sports REJETÉS → Score 0 immédiat
+    for sport_rejected in SPORTS_REJECTED:
+        if sport_rejected in text_full:
+            # Exception : Si article mentionne aussi sport accepté ET contexte technique
+            has_accepted_sport = any(sport in text_full for sport in SPORTS_ACCEPTED)
+            has_technical = any(kw in text_full for kw in ['partnership', 'technical', 'development'])
+            
+            if not (has_accepted_sport and has_technical):
+                return 0  # REJET
+    
+    # 1B. Vérifier GOSSIP rejeté → Score 0 immédiat
+    for gossip in GOSSIP_REJECTED:
+        if gossip in text_full:
+            return 0  # REJET
+    
+    # 1C. Vérifier au moins UN sport accepté présent
+    has_relevant_sport = any(sport in text_full for sport in SPORTS_ACCEPTED)
+    if not has_relevant_sport:
+        # Pas de sport explicite mais peut-être écurie F1/WEC ?
+        has_team = any(team in text_full for team in TEAMS_F1 + TEAMS_WEC_GT)
+        if not has_team:
+            return 0  # REJET (aucun sport pertinent détecté)
+    
+    # ============================================
+    # ÉTAPE 2 : SCORING QUALITÉ
+    # ============================================
     
     score = 0
     
-    # === SCORING POSITIF ===
+    # NIVEAU 1 : Technique & Performance (max 60 pts)
+    for keyword, points in KEYWORDS_TECHNICAL.items():
+        if keyword in text_full:
+            score += points
     
-    # 1. Mots-clés HAUTE priorité (+10 pts chacun, max 50)
-    high_matches = 0
-    for keyword in KEYWORDS_HIGH_PRIORITY:
-        if keyword.lower() in text_lower:
-            high_matches += 1
-            score += 10
+    # Cap niveau 1
+    score = min(score, 60)
     
-    # Bonus si plusieurs mots-clés haute priorité
-    if high_matches >= 3:
-        score += 20
+    # NIVEAU 2 : Business & Écuries (max +40 pts)
+    business_score = 0
+    for keyword, points in KEYWORDS_BUSINESS.items():
+        if keyword in text_full:
+            business_score += points
     
-    # 2. Mots-clés MOYENNE priorité (+5 pts chacun, max 25)
-    medium_matches = 0
-    for keyword in KEYWORDS_MEDIUM_PRIORITY:
-        if keyword.lower() in text_lower:
-            medium_matches += 1
-            score += 5
+    business_score = min(business_score, 40)
+    score += business_score
     
-    # 3. BONUS si titre contient mots-clés importants (+20 pts)
-    for keyword in KEYWORDS_HIGH_PRIORITY:
-        if keyword.lower() in title_lower:
-            score += 20
-            break  # Une seule fois
+    # NIVEAU 3 : Actualités générales (max +20 pts)
+    general_score = 0
+    for keyword, points in KEYWORDS_GENERAL.items():
+        if keyword in text_full:
+            general_score += points
     
-    # 4. BONUS source officielle/technique
-    technical_sources = ['f1_technical', 'racecar', 'fia', 'official']
-    if any(src in source.lower() for src in technical_sources):
-        score += 15
+    general_score = min(general_score, 20)
+    score += general_score
     
-    # 5. BONUS longueur (articles longs souvent plus techniques)
-    if len(article_text) > 2000:
-        score += 10
-    elif len(article_text) > 1000:
+    # BONUS : Pilotes/constructeurs majeurs (+5 pts)
+    if any(pilote in text_full for pilote in PILOTES_MAJEURS):
         score += 5
     
-    # === SCORING NÉGATIF ===
+    if any(constructeur in text_full for constructeur in CONSTRUCTEURS):
+        score += 3
     
-    # 1. Mots-clés BASSE priorité (-5 pts chacun)
-    for keyword in KEYWORDS_LOW_PRIORITY:
-        if keyword.lower() in text_lower:
-            score -= 5
+    # BONUS : Titre contient sport accepté (+10 pts)
+    if any(sport in title_lower for sport in SPORTS_ACCEPTED):
+        score += 10
     
-    # 2. Mots-clés NÉGATIFS (clickbait, etc.) (-20 pts)
-    for keyword in KEYWORDS_NEGATIVE:
-        if keyword.lower() in text_lower:
-            score -= 20
+    # BONUS : WEC/Endurance/GT explicite (+30 pts car moins couvert que F1)
+    endurance_keywords = ['wec', 'le mans', 'hypercar', 'lmp', 'imsa', 'gt3', 'gt4', 'gtwc']
+    if any(kw in text_full for kw in endurance_keywords):
+        score += 30
     
-    # 3. Titre trop court ou trop long (-10 pts)
-    title_len = len(article_title.split())
-    if title_len < 4 or title_len > 20:
-        score -= 10
+    # BONUS : Article long = plus de substance (+5 pts)
+    if len(article_text) > 1500:
+        score += 5
     
-    # === NORMALISATION ===
-    
-    # Cap entre 0 et 100
-    score = max(0, min(100, score))
+    # Cap final
+    score = min(score, 100)
     
     return score
 
 
+# ============================================
+# FONCTION DE RANKING (compatible avec ancien code)
+# ============================================
+
 def rank_articles(articles_df):
     """
-    Classer tous les articles par pertinence
-    
-    Args:
-        articles_df: DataFrame avec colonnes 'text', 'title', 'source'
-    
-    Returns:
-        DataFrame avec colonne 'relevance_score' ajoutée, trié
+    Classer articles avec nouveau scorer v2
+    Compatible avec l'ancien pipeline
     """
     
     if articles_df.empty:
         print("⚠️  No articles to rank")
         return articles_df
     
-    print("🎯 Scoring article relevance...\n")
+    print("🎯 Scoring article relevance (v2 - simplified)...\n")
     
-    # Calculer score pour chaque article
+    # Calculer scores
     articles_df['relevance_score'] = articles_df.apply(
-        lambda row: score_article_relevance(
+        lambda row: score_article_v2(
             row.get('text', ''),
             row.get('title', ''),
             row.get('source', '')
@@ -175,113 +339,26 @@ def rank_articles(articles_df):
         axis=1
     )
     
-    # Trier par score (descending)
+    # Trier
     ranked = articles_df.sort_values('relevance_score', ascending=False)
     
     # Stats
-    print(f"📊 Scoring statistics:")
+    print(f"📊 Scoring statistics (v2):")
     print(f"  • Mean score: {ranked['relevance_score'].mean():.1f}")
     print(f"  • Median score: {ranked['relevance_score'].median():.1f}")
     print(f"  • Max score: {ranked['relevance_score'].max():.0f}")
     print(f"  • Articles > 50: {(ranked['relevance_score'] > 50).sum()}")
-    print(f"  • Articles > 30: {(ranked['relevance_score'] > 30).sum()}\n")
+    print(f"  • Articles > 30: {(ranked['relevance_score'] > 30).sum()}")
+    print(f"  • Articles REJECTED (score 0): {(ranked['relevance_score'] == 0).sum()}\n")
     
     return ranked
 
 
-def filter_by_score(articles_df, min_score=20):
+def get_top_articles(articles_df, n=20):
     """
-    Filtrer articles par score minimum
-    
-    Args:
-        articles_df: DataFrame avec 'relevance_score'
-        min_score: Score minimum pour garder
-    
-    Returns:
-        DataFrame filtré
+    Obtenir top N articles (compatible ancien code)
     """
-    
-    if 'relevance_score' not in articles_df.columns:
-        print("⚠️  No relevance_score column, ranking first...")
-        articles_df = rank_articles(articles_df)
-    
-    filtered = articles_df[articles_df['relevance_score'] >= min_score].copy()
-    
-    print(f"🔍 Filtered articles with score >= {min_score}")
-    print(f"  • Kept: {len(filtered)}/{len(articles_df)} articles\n")
-    
-    return filtered
-
-
-def get_top_articles(articles_df, n=15):
-    """
-    Récupérer les N meilleurs articles
-    
-    Args:
-        articles_df: DataFrame avec 'relevance_score'
-        n: Nombre d'articles à retourner
-    
-    Returns:
-        DataFrame avec top N articles
-    """
-    
     if 'relevance_score' not in articles_df.columns:
         articles_df = rank_articles(articles_df)
     
-    top = articles_df.nlargest(n, 'relevance_score')
-    
-    print(f"🏆 Top {n} articles selected\n")
-    
-    return top
-
-
-# ============================================
-# TEST MODULE
-# ============================================
-
-if __name__ == "__main__":
-    print("=" * 60)
-    print("ARTICLE SCORER - TEST")
-    print("=" * 60)
-    print()
-    
-    # Articles de test
-    test_articles = [
-        {
-            'title': 'F1 telemetry data analysis shows Ferrari strategy error',
-            'text': 'Detailed analysis of telemetry data from the race reveals that Ferrari made a strategic error with their pit stop timing. Machine learning models predicted the optimal window...',
-            'source': 'F1_Technical'
-        },
-        {
-            'title': 'Hamilton wins dramatic race',
-            'text': 'Lewis Hamilton won today in a dramatic finish. The crowd was excited.',
-            'source': 'Motorsport_com'
-        },
-        {
-            'title': 'You won\'t believe what this driver said!',
-            'text': 'Shocking comments from driver about team. Social media is going crazy!',
-            'source': 'Clickbait_News'
-        },
-    ]
-    
-    df_test = pd.DataFrame(test_articles)
-    
-    # Test scoring
-    print("Testing relevance scoring:\n")
-    
-    for idx, row in df_test.iterrows():
-        score = score_article_relevance(row['text'], row['title'], row['source'])
-        print(f"{idx+1}. [{score:3.0f}] {row['title']}")
-    
-    print("\n" + "=" * 60)
-    
-    # Test ranking
-    ranked = rank_articles(df_test)
-    
-    print("\nRanked articles:")
-    for idx, row in ranked.iterrows():
-        print(f"  [{row['relevance_score']:3.0f}] {row['title']}")
-    
-    print("\n" + "=" * 60)
-    print("✅ TEST COMPLETE")
-    print("=" * 60)
+    return articles_df.head(n)

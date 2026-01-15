@@ -7,13 +7,21 @@ from datetime import datetime, timedelta
 import pandas as pd
 import sys
 import os
+import importlib
 
 # Importer modules locaux
 from rss_aggregator import fetch_rss_feeds, filter_recent_articles, save_to_database
 from article_extractor import extract_batch_articles
+
+# FORCER LE RELOAD du scorer pour éviter cache Python
+import article_scorer
+importlib.reload(article_scorer)
 from article_scorer import rank_articles, get_top_articles
-from ai_summarizer import summarize_batch, estimate_cost
-from web_generator import generate_weekly_digest_html, save_weekly_digest
+
+from article_deduplicator import deduplicate_articles
+from ai_summarizer import estimate_cost
+from bilingual_summarizer import summarize_batch_bilingual
+from bilingual_web_generator import generate_bilingual_html
 
 
 def print_banner():
@@ -27,8 +35,8 @@ def print_banner():
 
 def generate_weekly_digest(
     days_back=7,
-    max_articles_extract=50,
-    max_articles_summarize=15,
+    max_articles_extract=100,  # Augmenté : 50 → 100
+    max_articles_summarize=20,  # Augmenté : 15 → 20
     min_relevance_score=20,
     language='fr'
 ):
@@ -62,10 +70,13 @@ def generate_weekly_digest(
         
         if articles_df.empty:
             print("❌ ERROR: No articles fetched!")
+            print("   This might be a network/SSL issue in GitHub Actions")
             return pd.DataFrame()
         
     except Exception as e:
         print(f"❌ ERROR fetching RSS: {e}")
+        import traceback
+        traceback.print_exc()
         return pd.DataFrame()
     
     # ============================================
@@ -145,7 +156,11 @@ def generate_weekly_digest(
         # Filtrer par score minimum
         filtered_df = ranked_df[ranked_df['relevance_score'] >= min_relevance_score].copy()
         
-        print(f"  ✅ Kept {len(filtered_df)} articles with score >= {min_relevance_score}\n")
+        print(f"  ✅ Kept {len(filtered_df)} articles with score >= {min_relevance_score}")
+        
+        # DÉDUPLICATION (même news de sources différentes)
+        filtered_df = deduplicate_articles(filtered_df, similarity_threshold=0.7)
+        print()
         
         if filtered_df.empty:
             print("⚠️  WARNING: No articles passed relevance filter!")
@@ -171,12 +186,11 @@ def generate_weekly_digest(
         cost = estimate_cost(min(max_articles_summarize, len(filtered_df)))
         print(f"💰 Estimated cost: ${cost['total_cost']:.4f}\n")
         
-        # Générer résumés
-        summaries_df = summarize_batch(
+        # Générer résumés BILINGUES (FR + EN)
+        summaries_df = summarize_batch_bilingual(
             filtered_df,
             max_articles=max_articles_summarize,
-            delay=1,
-            language=language
+            delay=1
         )
         
         if summaries_df.empty:
@@ -195,19 +209,17 @@ def generate_weekly_digest(
     print("-" * 70)
     
     try:
-        # Dates semaine
-        week_end = datetime.now()
-        week_start = week_end - timedelta(days=days_back)
+        # Préparer articles additionnels (21-40)
+        additional_articles = None
+        if len(filtered_df) > max_articles_summarize:
+            additional_articles = filtered_df.iloc[max_articles_summarize:max_articles_summarize+20]
         
-        # Générer HTML
-        html_content = generate_weekly_digest_html(
-            summaries_df,
-            week_start,
-            week_end
+        # Générer HTML BILINGUE avec articles additionnels
+        generate_bilingual_html(
+            summaries_df, 
+            additional_articles_df=additional_articles,
+            output_path='docs/latest.html'
         )
-        
-        # Sauvegarder
-        save_weekly_digest(html_content)
         
     except Exception as e:
         print(f"❌ ERROR generating web page: {e}")
@@ -275,15 +287,15 @@ Examples:
     parser.add_argument(
         '--max-extract',
         type=int,
-        default=50,
-        help='Max articles to extract full content (default: 50)'
+        default=100,  # Augmenté: 50 → 100
+        help='Max articles to extract full content (default: 100)'
     )
     
     parser.add_argument(
         '--max-summaries',
         type=int,
-        default=15,
-        help='Max articles to summarize with AI (default: 15)'
+        default=20,  # Augmenté: 15 → 20
+        help='Max articles to summarize with AI (default: 20)'
     )
     
     parser.add_argument(

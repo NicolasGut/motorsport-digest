@@ -21,30 +21,33 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 RSS_FEEDS = {
     # ============================================
-    # F1 - Sources officielles et majeures
+    # SOURCES FONCTIONNELLES (vérifiées ✅)
     # ============================================
-    'F1_Official': 'https://www.formula1.com/en/latest/all.xml',
-    'Autosport': 'https://www.autosport.com/rss/feed/all',
-    'The_Race': 'https://www.the-race.com/feed/',
-    'Motorsport_com': 'https://www.motorsport.com/rss/all/news/',
-    'RaceFans': 'https://www.racefans.net/feed/',
+    
+    # Multi-séries (F1 + WEC + FE + F2 + GT)
+    'Autosport_All': 'https://www.autosport.com/rss/feed/all',  # ✅ 50 articles
+    'Motorsport_All': 'https://www.motorsport.com/rss/all/news/',  # ✅ 50 articles
+    
+    # F1 spécifique
+    'RaceFans': 'https://www.racefans.net/feed/',  # ✅ 20 articles
+    
+    # WEC / Endurance / GT
+    'Sportscar365': 'https://sportscar365.com/feed/',  # ✅ 10 articles
+    
+    # Sources avec warnings mais fonctionnelles
+    'F1_Official': 'https://www.formula1.com/en/latest/all.xml',  # ⚠️ encoding mais OK
+    'The_Race_F1': 'https://www.the-race.com/formula-1/feed/',  # ⚠️ token mais OK
     
     # ============================================
-    # F1 - Sources complémentaires
+    # NOTES - Sources testées mais cassées
     # ============================================
-    'PlanetF1': 'https://www.planetf1.com/feed/',
-    'GPBlog': 'https://www.gpblog.com/en/rss/news.xml',
-    'Crash_F1': 'https://www.crash.net/rss/f1',
-    
-    # ============================================
-    # WEC / ENDURANCE - Sources RSS (Alternative)
-    # ============================================
-    'Autosport_WEC': 'https://www.autosport.com/wec/rss',
-    'Motorsport_WEC': 'https://www.motorsport.com/wec/rss/news/',
-    
-    # ============================================
-    # Note: FIA_WEC officiel sera scrapé via web_scraper.py
-    # F1_Technical sera scrapé via web_scraper.py
+    # Les flux RSS Motorsport.com par section ne fonctionnent plus
+    # → Motorsport_All couvre déjà F1, F2, FE, WEC, GT, DTM
+    # 
+    # FormulaE_Official RSS a une erreur de syntaxe
+    # → Couvert par Motorsport_All + The_Race
+    #
+    # Pour plus de sources, voir web_scraper.py (F1 Technical)
     # ============================================
 }
 
@@ -98,19 +101,8 @@ def fetch_rss_feeds(feeds_dict=None, include_scraped=True):
     
     print(f"\n✅ RSS Total: {len(articles)} articles fetched")
     
-    # Ajouter sources scrapées (WEC, F1 Technical)
-    if include_scraped:
-        try:
-            from .web_scraper import scrape_all_sources
-            scraped_articles = scrape_all_sources()
-            articles.extend(scraped_articles)
-            print(f"✅ Combined Total (RSS + Scraped): {len(articles)} articles\n")
-        except ImportError:
-            print("⚠️  web_scraper module not found, skipping scraped sources\n")
-        except Exception as e:
-            print(f"⚠️  Scraping failed: {e}\n")
-    else:
-        print()
+    # Note: Web scraping désactivé (contenu déjà couvert par RSS)
+    # Si besoin : réactiver web_scraper.py pour F1 Technical
     
     return pd.DataFrame(articles)
 
@@ -153,7 +145,7 @@ def filter_recent_articles(df, hours=168):
 
 def save_to_database(df, db_path='data/veille_motorsport.db'):
     """
-    Sauvegarder articles dans SQLite (évite doublons)
+    Sauvegarder articles dans SQLite (met à jour scores si déjà existant)
     
     Args:
         df: DataFrame avec articles
@@ -172,26 +164,11 @@ def save_to_database(df, db_path='data/veille_motorsport.db'):
     conn = sqlite3.connect(db_path)
     
     try:
-        # Sauvegarder (append)
-        df.to_sql('articles', conn, if_exists='append', index=False)
-        
-        # Supprimer doublons (basé sur URL)
-        conn.execute('''
-            DELETE FROM articles
-            WHERE rowid NOT IN (
-                SELECT MIN(rowid)
-                FROM articles
-                GROUP BY link
-            )
-        ''')
-        
+        # Stratégie : replace au lieu d'append pour mettre à jour
+        df.to_sql('articles', conn, if_exists='replace', index=False)
         conn.commit()
         
-        # Compter total articles en base
-        cursor = conn.execute("SELECT COUNT(*) FROM articles")
-        total = cursor.fetchone()[0]
-        
-        print(f"✅ Database updated: {total} unique articles total\n")
+        print(f"✅ Database updated: {len(df)} articles total\n")
         
     except Exception as e:
         print(f"❌ Database error: {e}")

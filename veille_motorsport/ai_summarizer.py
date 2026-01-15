@@ -81,9 +81,6 @@ Summary:"""
     
     try:
         # Créer client Claude - ultra-compatible GitHub Actions
-        # Éviter tout kwargs qui pourrait être injecté par l'environnement
-        import os
-        
         # Nettoyer env variables proxy qui pourraient interférer
         old_http_proxy = os.environ.pop('HTTP_PROXY', None)
         old_https_proxy = os.environ.pop('HTTPS_PROXY', None)
@@ -99,8 +96,9 @@ Summary:"""
                 model="claude-sonnet-4-20250514",
                 max_tokens=300,
                 temperature=0.7,
-            messages=[
-                {"role": "user", "content": prompt}
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
             )
         
             # Extraire résumé

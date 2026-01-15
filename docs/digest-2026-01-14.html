@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Revue hebdomadaire motorsport - Analyses data-driven F1, WEC, sport automobile">
+    <meta name="author" content="Data Analyst Motorsport">
+    <title>Revue Motorsport - 07/01/2026</title>
+    <style>
+        /* ============================================
+           GLOBAL STYLES
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 
+                         system-ui, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+        
+        /* ============================================
+           HEADER
+           ============================================ */
+        header {
+            background: linear-gradient(135deg, #E10600, #8B0000);
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(225, 6, 0, 0.3);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+        
+        .subtitle {
+            opacity: 0.95;
+            margin-top: 0.8rem;
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+        
+        .stats {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .stat-item strong {
+            font-weight: 600;
+        }
+        
+        /* ============================================
+           ARTICLES
+           ============================================ */
+        .article {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 1.8rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid transparent;
+        }
+        
+        .article:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            border-left-color: #E10600;
+        }
+        
+        .article-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1.2rem;
+            gap: 1rem;
+        }
+        
+        .article-title {
+            flex: 1;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0;
+            line-height: 1.3;
+        }
+        
+        .article-title a {
+            color: #E10600;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .article-title a:hover {
+            color: #8B0000;
+            text-decoration: underline;
+        }
+        
+        .relevance-badge {
+            background: linear-gradient(135deg, #E10600, #C00500);
+            color: white;
+            padding: 0.4rem 0.9rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(225, 6, 0, 0.3);
+        }
+        
+        .relevance-badge.high {
+            background: linear-gradient(135deg, #E10600, #FF0800);
+        }
+        
+        .relevance-badge.medium {
+            background: linear-gradient(135deg, #FF8C00, #FFA500);
+        }
+        
+        .relevance-badge.low {
+            background: linear-gradient(135deg, #808080, #A0A0A0);
+        }
+        
+        .article-meta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            color: #666;
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+        }
+        
+        .source-tag {
+            display: inline-block;
+            background: #f0f0f0;
+            color: #555;
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .date-tag {
+            color: #888;
+            font-size: 0.85rem;
+        }
+        
+        .article-summary {
+            line-height: 1.7;
+            color: #333;
+            font-size: 1.05rem;
+        }
+        
+        /* ============================================
+           FOOTER
+           ============================================ */
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2.5rem;
+            border-top: 2px solid #ddd;
+            color: #666;
+        }
+        
+        .cta {
+            background: linear-gradient(135deg, #E10600, #8B0000);
+            color: white;
+            padding: 1.2rem 2.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1.5rem;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(225, 6, 0, 0.3);
+        }
+        
+        .cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(225, 6, 0, 0.4);
+        }
+        
+        .footer-meta {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #999;
+        }
+        
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .article-header {
+                flex-direction: column;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .article {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📰 Revue Motorsport</h1>
+        <p class="subtitle">
+            Semaine du 07/01/2026 au 14/01/2026
+        </p>
+        <div class="stats">
+            <div class="stat-item">
+                <strong>15</strong> articles sélectionnés
+            </div>
+            <div class="stat-item">
+                <strong>Sources fiables</strong> F1 · WEC · Technique
+            </div>
+            <div class="stat-item">
+                <strong>Analyse data-driven</strong> + IA
+            </div>
+        </div>
+    </header>
+    
+    <main>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.motorsport.com/f1/news/f1-fans-lose-it-as-max-verstappen-and-daniel-ricciardo-reunite-in-red-bull-video/10790075/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=www" target="_blank" rel="noopener">
+                        F1 fans lose it as Max Verstappen and Daniel Ricciardo reunite in Red Bull video
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Motorsport_All</span>
+                <span class="date-tag">📅 Wed, 14 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                Max Verstappen et Daniel Ricciardo se sont retrouvés dans une vidéo promotionnelle Red Bull où le quadruple champion du monde affrontait la recrue Racing Bulls Arvid Lindblad dans des défis utilisant différents modèles Ford historiques. Cette réunion surprise a suscité l'enthousiasme des fans de F1 sur les réseaux sociaux.
+
+Depuis son départ de la F1 après le Grand Prix de Singapour 2024, Ricciardo est devenu ambassadeur Ford Racing en septembre 2025. Ford s'associe également à Red Bull Powertrains à partir de 2026, ce qui explique ces collaborations croisées. Red Bull et Racing Bulls dévoileront leurs livrées 2026 lors d'un événement à Detroit le 15 janvier.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.motorsport.com/imsa/news/juri-vips-set-for-rolex-24-debut-as-rll-team-mclaren-confirm-driver-lineup/10789823/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=www" target="_blank" rel="noopener">
+                        Juri Vips set for Rolex 24 debut as RLL Team McLaren confirm driver lineup
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Motorsport_All</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **Juri Vips fera ses débuts aux 24h de Daytona avec RLL Team McLaren**
+
+L'équipe Rahal Letterman Lanigan Racing, désormais associée à McLaren Automotive sous le nom RLL Team McLaren, a confirmé son line-up pour la saison 2026 IMSA WeatherTech SportsCar Championship. Max Esterson et Nikita Johnson piloteront la McLaren GT3 EVO n°59 en catégorie GTD Pro sur l'ensemble de la saison, rejoints par Dean MacDonald et Jüri Vips pour les 24h de Daytona (21-25 janvier).
+
+Vips, ancien pilote de réserve Red Bull ayant effectué trois départs IndyCar avec RLL, découvrira l'endurance après des tests concluants à Daytona en novembre. Cette collaboration marque le retour de McLaren Automotive en GTD Pro et la fin du partenariat BMW-RLL qui durait depuis 2009. L'équipe participera au Roar Before the Rolex 24 (16-18 janvier) pour finaliser sa préparation.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.autosport.com/general/news/autosport-business-exchange-convenes-in-london-featuring-industry-influencing-speaker-line-up/10789944/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=uk" target="_blank" rel="noopener">
+                        Autosport Business Exchange convenes in London, featuring industry-influencing speaker line-up
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Autosport_All</span>
+                <span class="date-tag">📅 Wed, 14 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                L'Autosport Business Exchange (ABX) se tiendra le 21 janvier 2026 à Londres, réunissant les dirigeants du sport automobile autour du thème "The Power Shift". Laurent Mekies (Oracle Red Bull Racing) sera l'intervenant principal, accompagné de Graeme Lowdon (Cadillac F1), Alejandro Agag (Formula E), Jim DeLorenzo (Apple) et Nikolas Tombazis (FIA).
+
+L'événement analysera l'impact des nouvelles réglementations, constructeurs et partenaires sur l'écosystème du sport automobile. Les discussions porteront sur l'afflux sans précédent de sponsors et capitaux, l'arrivée de Cadillac et Audi en F1, ainsi que l'entrée d'Apple comme premier partenaire de streaming digital. Cette conférence stratégique précède les Autosport Awards et vise à fournir aux dirigeants les clés pour naviguer dans cette nouvelle ère où le sport automobile se redéfinit par l'investissement, l'innovation technologique et la pertinence culturelle.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.motorsport.com/general/news/championship-winning-erik-comas-renault-5-turbo-heads-to-auction-with-250000-estimate/10789922/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=www" target="_blank" rel="noopener">
+                        Championship-winning Erik Comas Renault 5 Turbo heads to auction with £250,000 estimate
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Motorsport_All</span>
+                <span class="date-tag">📅 Wed, 14 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                La Renault 5 Turbo 'Superproduction' d'Erik Comas, avec laquelle il remporta le championnat français en 1987, sera mise aux enchères le 20 février avec une estimation de 200 000 à 250 000 livres sterling. Ce châssis Ch 3-86 est l'une des trois seules unités d'usine 'Superproduction' parmi six Turbo construites pour le Supertouring français des années 1980, équipée d'un moteur 1419cc développé par Sodemo Moteurs avec turbo Garrett T4/T3 produisant 410 chevaux sous 3,2 bars de pression.
+
+La vente comprend également une authentique Renault 5 Maxi Turbo de 1984 (estimée 175 000-200 000 £) et une DAM 4100 Metro 6R4 de 1987 (100 000-120 000 £). Cette enchère spécialisée en voitures de compétition se déroulera lors du weekend Race Retro à Stoneleigh Park.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.motorsport.com/f1/news/newey-honda-and-a-new-wind-tunnel-but-is-aston-martin-ready/10789911/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=www" target="_blank" rel="noopener">
+                        Adrian Newey, Honda power and new facilities: Is Aston Martin ready for success in F1 2026?
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Motorsport_All</span>
+                <span class="date-tag">📅 Wed, 14 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **Aston Martin mise sur 2026 avec Newey et Honda**
+
+Aston Martin a sacrifié sa saison 2025 pour se concentrer sur les nouvelles réglementations 2026, investissant massivement dans l'arrivée d'Adrian Newey, le partenariat avec Honda et de nouvelles installations à Silverstone. L'équipe a particulièrement travaillé sur la corrélation entre ses outils de développement (CFD, soufflerie et données piste), un problème récurrent en F1 moderne que le directeur Andy Cowell décrit comme "synchroniser trois montres différentes".
+
+Cependant, des incertitudes demeurent sur le moteur Honda 2026, le constructeur japonais ayant dû reconstruire partiellement son projet F1 après son retrait officiel en 2021. Une controverse technique sur le taux de compression (réduit de 18:1 à 16:1) impliquant Mercedes et Red Bull Powertrains complique également la donne avant les discussions FIA du 22 janvier.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.autosport.com/f1/news/newey-honda-and-a-new-wind-tunnel-but-is-aston-martin-ready/10789897/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=uk" target="_blank" rel="noopener">
+                        Newey, Honda and a new wind tunnel – but is Aston Martin ready?
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Autosport_All</span>
+                <span class="date-tag">📅 Wed, 14 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **Aston Martin mise sur 2026 avec des investissements majeurs mais des incertitudes subsistent**
+
+Aston Martin a sacrifié sa saison 2025 pour se concentrer sur les nouvelles réglementations 2026, s'appuyant sur l'arrivée d'Adrian Newey, le partenariat Honda et de nouvelles installations à Silverstone. L'équipe a utilisé 2025 comme année d'apprentissage pour valider ses outils de développement et améliorer la corrélation entre CFD, soufflerie et données piste - un problème critique en F1 moderne que Red Bull a également rencontré.
+
+Cependant, des zones d'ombre demeurent : Honda a dû reconstruire partiellement son projet F1 après avoir redéployé de nombreux ingénieurs vers d'autres divisions suite à son retrait officiel fin 2021. De plus, une controverse sur le taux de compression des moteurs 2026 (réduit de 18:1 à 16:1) impliquant Mercedes et Red Bull Powertrains fait l'objet de discussions avec la FIA prévues le 22 janvier.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.motorsport.com/wrc/news/m-sport-reveals-2026-wrc-ford-puma/10789888/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=www" target="_blank" rel="noopener">
+                        M-Sport reveals 2026 WRC Ford Puma
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Motorsport_All</span>
+                <span class="date-tag">📅 Wed, 14 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                M-Sport Ford a dévoilé sa Ford Puma Rally1 2026 avec une nouvelle livrée blanc, vert et bleu, remplaçant le violet Red Bull de 2025. Cette évolution visuelle accompagne un partenariat renforcé avec Motorsport Ireland et un line-up 100% irlandais composé de Joshua McErlean (reconduit après une saison rookie prometteuse) et Jon Armstrong (promu après sa 2e place en ERC 2025).
+
+Côté technique, M-Sport a concentré son développement hivernal sur la géométrie et la répartition des masses, sans utiliser tous ses jokers d'homologation. L'équipe a également optimisé le refroidissement des freins - élément non homologué mais crucial pour maintenir les performances sur l'intégralité des spéciales. Les tests de pré-saison dans le sud de la France se sont bien déroulés avant l'ouverture à Monte-Carlo.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.autosport.com/wrc/news/m-sport-reveals-2026-wrc-ford-puma/10789890/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=uk" target="_blank" rel="noopener">
+                        M-Sport reveals 2026 WRC Ford Puma
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Autosport_All</span>
+                <span class="date-tag">📅 Wed, 14 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                M-Sport-Ford a dévoilé la version 2026 de sa Ford Puma Rally1, qui arbore une nouvelle livrée blanc, vert et bleu remplaçant le violet Red Bull de 2025. Cette évolution visuelle accompagne un partenariat renforcé avec Motorsport Ireland, se traduisant par un duo 100% irlandais composé de Josh McErlean (qui poursuit sa deuxième saison) et Jon Armstrong, promu après sa vice-championnat d'Europe des rallyes 2025.
+
+Techniquement, M-Sport a concentré son développement hivernal sur la géométrie et la répartition des masses de la Puma, sans utiliser tous ses jokers d'homologation disponibles. L'équipe a également optimisé le refroidissement des freins - élément non homologué mais crucial pour maintenir les performances sur l'ensemble des spéciales. Les tests de pré-saison dans le sud de la France se sont bien déroulés avant le rallye Monte-Carlo qui ouvre la saison.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.motorsport.com/ChiliBowl/news/blake-hahn-scores-prelim-night-win-for-chili-bowls-first-family/10789867/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=www" target="_blank" rel="noopener">
+                        Blake Hahn scores prelim night win for Chili Bowl's first family
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Motorsport_All</span>
+                <span class="date-tag">📅 Wed, 14 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                Blake Hahn, petit-fils du fondateur de l'événement Emmett Hahn, a remporté sa première victoire lors d'une soirée préliminaire du Chili Bowl après une décennie de participation. Le pilote de 30 ans a réalisé une remontée spectaculaire de la 8e à la 1ère place en 25 tours, s'imposant devant Hank Davis qui décroche sa troisième qualification directe en quatre ans.
+
+Cette victoire revêt une dimension particulière pour la "première famille" du Chili Bowl, Hahn ayant participé cinq fois à la finale du samedi avec un meilleur résultat de 8e place en 2020. Fait notable, le podium a également vu la 3e place du jeune Jett Barnes, 14 ans seulement, qui ne disputait que sa troisième course en Midget. Hahn et Davis sont désormais qualifiés directement pour l'événement principal de samedi.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.racefans.net/2026/01/14/ferraris-hp-branding-not-good-design-says-audis-new-title-sponsor/" target="_blank" rel="noopener">
+                        Ferrari’s F1 livery is ‘not good design’, says Audi’s new title sponsor | Formula 1
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">RaceFans</span>
+                <span class="date-tag">📅 Wed, 14 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **Audi F1 : Critique du design Ferrari-HP et stratégie de partenariat**
+
+Antoine Le Nel, directeur marketing de Revolut (sponsor d'Audi F1), critique l'intégration visuelle du partenariat Ferrari-HP, estimant que "mettre du bleu sur une voiture rouge n'est pas bon d'un point de vue design". Il salue en revanche l'approche de McLaren avec Mastercard et Chrome.
+
+Audi entre en F1 cette saison après le rachat de Sauber, développant intégralement ses propres unités de puissance et châssis. Le Nel souligne cette approche technique complète, contrastant avec Cadillac qui s'appuiera sur des composants Ferrari. Cette philosophie d'auto-développement correspond à la stratégie de Revolut dans le secteur bancaire.
+
+L'alignement des identités de marque Audi-Revolut ("luxe accessible") a motivé ce partenariat, face à des écuries jugées moins "relatables" comme Ferrari.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.racefans.net/2026/01/14/round-up-14th-january-2026/" target="_blank" rel="noopener">
+                        Round-up: Bianchi’s family says his stolen kart has been recovered, and more | RaceFans Round-up
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">RaceFans</span>
+                <span class="date-tag">📅 Wed, 14 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **Résumé Motorsport - 14 janvier 2026**
+
+La famille de Jules Bianchi annonce avoir récupéré le dernier kart utilisé par le pilote F1 décédé, qui avait été volé la semaine dernière. Philippe Bianchi remercie les réseaux sociaux et la gendarmerie de Brignoles pour leur aide, précisant que quelques karts et une mini-moto restent encore à retrouver.
+
+En parallèle, un ancien pilote F1 brésilien a été arrêté au Texas pour agression lors d'une compétition de karting, déclarant avoir défendu son fils face à un adulte. Côté compétition, Taito Kato (ART GP) participera à trois des quatre manches de FRME avant sa saison F3, tandis qu'Andrea Kimi Antonelli exprime ses ambitions de titre en F2 2026 avec MP Motorsport pour décrocher une place en F1.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://sportscar365.com/sro/igtc/bamber-sims-catsburg-in-jmr-corvette-for-bathurst-12h/" target="_blank" rel="noopener">
+                        Bamber, Sims, Catsburg in JMR Corvette for Bathurst 12H
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Sportscar365</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                **JMR aligne un trio de pilotes GM pour les 12 Heures de Bathurst**
+
+L'équipe Johor Motorsports Racing (JMR) a confirmé Earl Bamber, Alexander Sims et Nicky Catsburg comme pilotes de sa Chevrolet Corvette Z06 GT3.R n°2 en catégorie Pro pour les 12 Heures de Bathurst le 15 février. Cette course marque les débuts très attendus de la Corvette sur le circuit de Mount Panorama. 
+
+JMR alignera également une seconde Corvette en Pro-Am avec les frères Prince Jefri Ibrahim et Prince Abu Bakar Ibrahim, accompagnés de Ben Green et Jordan Love. L'équipe malaisienne fait son retour à Bathurst pour la première fois depuis 2024, après avoir obtenu un podium Pro-Am avec Mercedes-AMG. JMR prévoit de participer à l'ensemble du championnat IGTC 2025, incluant Spa, Suzuka et les nouvelles 8 Heures d'Indianapolis.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://sportscar365.com/imsa/iwsc/bennett-completes-van-der-steur-lineup-for-daytona/" target="_blank" rel="noopener">
+                        Bennett Completes Van der Steur Lineup for Daytona
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Sportscar365</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                Carl Wattana Bennett, ancien pilote Hypercar Isotta Fraschini, complète l'équipage de Van der Steur Racing pour les Rolex 24 de Daytona. Le pilote thaïlando-américain de 21 ans rejoint Rory van der Steur, Valentine Hasse-Clot et Sebastien Baud sur l'Aston Martin Vantage GT3 Evo en catégorie GTD pour l'ouverture de saison IMSA WeatherTech SportsCar Championship.
+
+Bennett apporte une expérience diversifiée avec cinq départs en FIA WEC 2024, des participations récentes en Mustang Challenge North America et European Le Mans Series, ainsi qu'un engagement actuel en Asian Le Mans Series 2025-26 sur Ferrari 296 GT3 AF Corse. Cette nomination finalise la grille de 60 voitures engagées à Daytona, marquant le dernier siège pilote à être confirmé pour l'événement d'endurance phare américain.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.motorsport.com/f1/news/fernando-alonso-spotted-in-monaco-driving-rare-group-b-legend/10789821/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=www" target="_blank" rel="noopener">
+                        Fernando Alonso spotted in Monaco driving rare Group B legend
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Motorsport_All</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                Fernando Alonso a été aperçu au volant d'une Audi Sport Quattro dans les rues de Monaco, ajoutant cette légende du Groupe B à sa collection impressionnante de supercars. Cette homologation rallye limitée à 214 exemplaires développe 306 chevaux grâce à son moteur 5 cylindres turbo de 2,1 litres et abat le 0-100 km/h en 4,8 secondes via la transmission intégrale quattro.
+
+Le double champion du monde F1 a multiplié les sorties ces dernières semaines avec notamment une Mercedes CLK GTR (28 exemplaires, 622 ch, valorisée à plus de 4 millions de dollars) et une Aston Martin Valiant limitée à 38 unités. L'Audi Sport Quattro, construite pour satisfaire aux exigences d'homologation FIA de 200 véhicules pour le Groupe B, se distinguait par son empattement raccourci et ses panneaux de carrosserie composite allégés par rapport à l'Ur-Quattro.
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="article-header">
+                <h2 class="article-title">
+                    <a href="https://www.motorsport.com/f1/news/jean-alesis-1992-ferrari-f92a-f1-car-heads-to-auction-with-3-5million-estimate/10789755/?utm_source=RSS&utm_medium=referral&utm_campaign=RSS-ALL&utm_term=News&utm_content=www" target="_blank" rel="noopener">
+                        Jean Alesi's 1992 Ferrari F92A F1 car heads to auction with €3-5million estimate
+                    </a>
+                </h2>
+                <span class="relevance-badge high">100</span>
+            </div>
+            
+            <div class="article-meta">
+                <span class="source-tag">Motorsport_All</span>
+                <span class="date-tag">📅 Tue, 13 Ja</span>
+            </div>
+            
+            <div class="article-summary">
+                La Ferrari F92A de Jean Alesi, pilotée lors de cinq Grands Prix en 1992, sera mise aux enchères par Artcurial avec une estimation de 3 à 5 millions d'euros. Le pilote français a conservé cette monoplace dans sa villa depuis 30 ans, sans y toucher depuis ses derniers tours à Fiorano.
+
+La F92A se distinguait par une innovation aérodynamique majeure : un double plancher générant plus d'appui que la concurrence. Cependant, cette configuration provoquait un phénomène de "blow-by" où les pistons aspiraient l'huile du carter, nécessitant l'installation d'un second réservoir d'huile rechargeable en course via un bouton "P-ON" actionné par Alesi.
+
+Ferrari avait offert cette voiture au pilote à l'issue de la saison 1992, sur intervention de Niki Lauda auprès du président de la Scuderia.
+            </div>
+        </article>
+
+    </main>
+    
+    <footer>
+        <p style="font-size: 1.1rem; margin-bottom: 1rem;">
+            Revue hebdomadaire automatisée · Veille motorsport data-driven
+        </p>
+        
+        <a href="https://github.com/[votre-username]/motorsport-digest" class="cta">
+            🏎️ Voir le projet GitHub
+        </a>
+        
+        <p class="footer-meta">
+            Généré automatiquement le 14/01/2026 à 19:50
+            <br>
+            Powered by Python · Claude API · FastF1 · GitHub Actions
+        </p>
+        
+        <p style="margin-top: 2rem; font-size: 0.85rem; color: #aaa;">
+            Motorsport Digest · Data Analytics Motorsport
+            <br>
+            <a href="index.html" style="color: #E10600; text-decoration: none;">
+                📚 Voir toutes les archives
+            </a>
+        </p>
+    </footer>
+</body>
+</html>
