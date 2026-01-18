@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Éditeur Digest Motorsport - En Ligne</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #E10600 0%, #990400 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(225, 6, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .toolbar {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .input-url {
+            flex: 1;
+            min-width: 400px;
+            padding: 12px 16px;
+            background: #333;
+            border: 2px solid #555;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .input-url:focus {
+            outline: none;
+            border-color: #E10600;
+            box-shadow: 0 0 0 3px rgba(225, 6, 0, 0.2);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #E10600;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #b30500;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(225, 6, 0, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #444;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #555;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .stats {
+            margin-left: auto;
+            display: flex;
+            gap: 20px;
+            font-size: 0.95rem;
+        }
+        
+        .stat {
+            background: #333;
+            padding: 8px 16px;
+            border-radius: 6px;
+        }
+        
+        .stat strong {
+            color: #E10600;
+            font-size: 1.2rem;
+            margin-right: 5px;
+        }
+        
+        .articles-grid {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .article-card {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            border-left: 4px solid #E10600;
+        }
+        
+        .article-card.hidden {
+            opacity: 0.4;
+            border-left-color: #666;
+        }
+        
+        .article-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .visibility-toggle {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+        
+        .article-content {
+            flex: 1;
+        }
+        
+        .article-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .article-title a {
+            color: #fff;
+            text-decoration: none;
+        }
+        
+        .article-title a:hover {
+            color: #E10600;
+        }
+        
+        .article-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .source-tag {
+            background: #E10600;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .date-tag {
+            background: #444;
+            color: #ccc;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .score-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .score-high { background: #28a745; color: white; }
+        .score-medium { background: #ffc107; color: #000; }
+        .score-low { background: #6c757d; color: white; }
+        
+        .article-summary {
+            background: #333;
+            padding: 15px;
+            border-radius: 8px;
+            line-height: 1.7;
+            font-size: 1rem;
+            color: #ddd;
+            min-height: 100px;
+        }
+        
+        .article-summary[contenteditable="true"] {
+            border: 2px solid #E10600;
+            outline: none;
+        }
+        
+        .article-summary[contenteditable="true"]:focus {
+            background: #3a3a3a;
+            box-shadow: 0 0 0 3px rgba(225, 6, 0, 0.2);
+        }
+        
+        .edit-indicator {
+            display: inline-block;
+            background: #E10600;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 10px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #2a2a2a;
+            border-radius: 12px;
+        }
+        
+        .empty-state h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: #E10600;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #999;
+        }
+        
+        .spinner {
+            border: 4px solid #333;
+            border-top: 4px solid #E10600;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏎️ Éditeur Digest Motorsport</h1>
+            <p class="subtitle">Édition en ligne avec sauvegarde automatique</p>
+        </header>
+        
+        <div class="toolbar">
+            <input 
+                type="text" 
+                id="urlInput" 
+                class="input-url" 
+                placeholder="https://NicolasGut.github.io/motorsport-digest/latest.html"
+                value="https://nicolasgut.github.io/motorsport-digest/latest.html"
+            />
+            <button class="btn btn-primary" onclick="loadDigestFromURL()">
+                📥 Charger le digest
+            </button>
+            <button class="btn btn-secondary" onclick="loadFromStorage()">
+                💾 Charger sauvegarde
+            </button>
+            <button class="btn btn-secondary" onclick="toggleAllArticles()">
+                👁️ Tout afficher/masquer
+            </button>
+            <button class="btn btn-success" onclick="exportDigest()">
+                ⬇️ Télécharger
+            </button>
+            
+            <div class="stats">
+                <div class="stat">
+                    <strong id="visibleCount">0</strong> visibles
+                </div>
+                <div class="stat">
+                    <strong id="hiddenCount">0</strong> masqués
+                </div>
+                <div class="stat">
+                    <strong id="editedCount">0</strong> édités
+                </div>
+            </div>
+        </div>
+        
+        <div id="articlesContainer" class="articles-grid">
+            <div class="empty-state">
+                <h2>👆 Chargez votre digest</h2>
+                <p>L'URL par défaut pointe vers votre dernier digest publié</p>
+                <p style="margin-top: 10px; color: #666;">Vos modifications sont sauvegardées automatiquement</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast"></div>
+    
+    <script>
+        let articles = [];
+        let originalHtml = '';
+        let editedArticles = new Set();
+        const STORAGE_KEY = 'digest-edits';
+        
+        // Auto-sauvegarder toutes les 30 secondes
+        setInterval(saveToStorage, 30000);
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        async function loadDigestFromURL() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) {
+                alert('Veuillez entrer une URL');
+                return;
+            }
+            
+            const container = document.getElementById('articlesContainer');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div>Chargement du digest...</div>';
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Erreur de chargement');
+                
+                const html = await response.text();
+                originalHtml = html;
+                parseDigest(html);
+                saveToStorage();
+                showToast('✅ Digest chargé !');
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>❌ Erreur de chargement</h2>
+                        <p>${error.message}</p>
+                        <p style="margin-top: 10px;">Vérifiez l'URL et réessayez</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function saveToStorage() {
+            if (articles.length === 0) return;
+            
+            try {
+                const data = {
+                    articles,
+                    originalHtml,
+                    editedArticles: Array.from(editedArticles),
+                    savedAt: new Date().toISOString()
+                };
+                
+                await window.storage.set(STORAGE_KEY, JSON.stringify(data));
+                console.log('✅ Sauvegarde automatique réussie');
+            } catch (error) {
+                console.error('Erreur sauvegarde:', error);
+            }
+        }
+        
+        async function loadFromStorage() {
+            const container = document.getElementById('articlesContainer');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div>Chargement de la sauvegarde...</div>';
+            
+            try {
+                const result = await window.storage.get(STORAGE_KEY);
+                if (!result) {
+                    throw new Error('Aucune sauvegarde trouvée');
+                }
+                
+                const data = JSON.parse(result.value);
+                articles = data.articles;
+                originalHtml = data.originalHtml;
+                editedArticles = new Set(data.editedArticles);
+                
+                renderArticles();
+                updateStats();
+                
+                const savedDate = new Date(data.savedAt).toLocaleString('fr-FR');
+                showToast(`✅ Sauvegarde chargée (${savedDate})`);
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>ℹ️ ${error.message}</h2>
+                        <p>Chargez d'abord un digest depuis l'URL</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function parseDigest(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const articleElements = doc.querySelectorAll('article.article');
+            
+            articles = [];
+            articleElements.forEach((article, index) => {
+                const title = article.querySelector('.article-title')?.textContent.trim() || '';
+                const url = article.querySelector('.article-title a')?.href || '#';
+                const source = article.querySelector('.source-tag')?.textContent.trim() || '';
+                const date = article.querySelector('.date-tag')?.textContent.trim() || '';
+                const score = article.querySelector('.relevance-badge')?.textContent.trim() || '';
+                const summary = article.querySelector('.article-summary')?.innerHTML.trim() || '';
+                
+                articles.push({
+                    index,
+                    title,
+                    url,
+                    source,
+                    date,
+                    score,
+                    summary,
+                    visible: true,
+                    edited: false
+                });
+            });
+            
+            renderArticles();
+            updateStats();
+        }
+        
+        function renderArticles() {
+            const container = document.getElementById('articlesContainer');
+            
+            if (articles.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>👆 Chargez votre digest</h2>
+                        <p>L'URL par défaut pointe vers votre dernier digest publié</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = articles.map((article, idx) => {
+                const scoreClass = getScoreClass(article.score);
+                const hiddenClass = article.visible ? '' : 'hidden';
+                const editIndicator = article.edited ? '<span class="edit-indicator">ÉDITÉ</span>' : '';
+                
+                return `
+                    <div class="article-card ${hiddenClass}" data-index="${idx}">
+                        <div class="article-header">
+                            <input type="checkbox" 
+                                   class="visibility-toggle" 
+                                   ${article.visible ? 'checked' : ''}
+                                   onchange="toggleArticle(${idx})">
+                            <div class="article-content">
+                                <h2 class="article-title">
+                                    <a href="${article.url}" target="_blank">${article.title}</a>
+                                    ${editIndicator}
+                                </h2>
+                                <div class="article-meta">
+                                    <span class="source-tag">${article.source}</span>
+                                    <span class="date-tag">${article.date}</span>
+                                    <span class="score-badge ${scoreClass}">${article.score}</span>
+                                </div>
+                                <div class="article-summary" 
+                                     contenteditable="true"
+                                     onblur="handleSummaryEdit(${idx}, this)">
+                                    ${article.summary}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function getScoreClass(scoreText) {
+            const score = parseInt(scoreText);
+            if (score >= 70) return 'score-high';
+            if (score >= 40) return 'score-medium';
+            return 'score-low';
+        }
+        
+        function toggleArticle(index) {
+            articles[index].visible = !articles[index].visible;
+            renderArticles();
+            updateStats();
+            saveToStorage();
+            showToast(articles[index].visible ? '👁️ Article affiché' : '🙈 Article masqué');
+        }
+        
+        function toggleAllArticles() {
+            const allVisible = articles.every(a => a.visible);
+            articles.forEach(a => a.visible = !allVisible);
+            renderArticles();
+            updateStats();
+            saveToStorage();
+            showToast(allVisible ? '🙈 Tous masqués' : '👁️ Tous affichés');
+        }
+        
+        function handleSummaryEdit(index, element) {
+            const newSummary = element.innerHTML.trim();
+            if (newSummary !== articles[index].summary) {
+                articles[index].summary = newSummary;
+                articles[index].edited = true;
+                editedArticles.add(index);
+                updateStats();
+                renderArticles();
+                saveToStorage();
+                showToast('✏️ Résumé modifié');
+            }
+        }
+        
+        function updateStats() {
+            const visible = articles.filter(a => a.visible).length;
+            const hidden = articles.length - visible;
+            const edited = editedArticles.size;
+            
+            document.getElementById('visibleCount').textContent = visible;
+            document.getElementById('hiddenCount').textContent = hidden;
+            document.getElementById('editedCount').textContent = edited;
+        }
+        
+        function exportDigest() {
+            if (articles.length === 0) {
+                alert('Aucun digest chargé');
+                return;
+            }
+            
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(originalHtml, 'text/html');
+            const articleElements = doc.querySelectorAll('article.article');
+            
+            // Appliquer les modifications
+            const toRemove = [];
+            articles.forEach((article, index) => {
+                if (index < articleElements.length) {
+                    if (!article.visible) {
+                        toRemove.push(articleElements[index]);
+                    } else if (article.edited) {
+                        const summaryElement = articleElements[index].querySelector('.article-summary');
+                        if (summaryElement) {
+                            summaryElement.innerHTML = article.summary;
+                        }
+                    }
+                }
+            });
+            
+            // Supprimer articles masqués
+            toRemove.forEach(el => el.remove());
+            
+            // Télécharger
+            const finalHtml = doc.documentElement.outerHTML;
+            const blob = new Blob([finalHtml], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `digest-edited-${new Date().toISOString().split('T')[0]}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('💾 Digest téléchargé !');
+        }
+        
+        // Charger automatiquement au démarrage si sauvegarde existe
+        window.addEventListener('load', async () => {
+            try {
+                const result = await window.storage.get(STORAGE_KEY);
+                if (result) {
+                    const data = JSON.parse(result.value);
+                    const savedDate = new Date(data.savedAt);
+                    const now = new Date();
+                    const daysDiff = (now - savedDate) / (1000 * 60 * 60 * 24);
+                    
+                    // Si la sauvegarde a moins de 7 jours, proposer de la charger
+                    if (daysDiff < 7) {
+                        const savedDateStr = savedDate.toLocaleString('fr-FR');
+                        if (confirm(`Sauvegarde trouvée (${savedDateStr})\nVoulez-vous la charger ?`)) {
+                            loadFromStorage();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('Pas de sauvegarde disponible');
+            }
+        });
+        
+        // Raccourci Ctrl+S
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                exportDigest();
+            }
+        });
+    </script>
+</body>
+</html>
