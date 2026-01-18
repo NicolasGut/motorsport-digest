@@ -300,10 +300,10 @@ def generate_bilingual_html(summaries_df, additional_articles_df=None, output_pa
         html += """
         <section style="margin-top: 60px; padding-top: 40px; border-top: 3px solid #e74c3c;">
             <h2 class="lang-fr" style="text-align: center; color: #2c3e50; margin-bottom: 30px;">
-                ðŸ“° Plus d'informations
+                Plus d'informations
             </h2>
             <h2 class="lang-en" style="text-align: center; color: #2c3e50; margin-bottom: 30px;">
-                ðŸ“° More News
+                More News
             </h2>
             
             <ul style="list-style: none; padding: 0;">
@@ -342,7 +342,7 @@ def generate_bilingual_html(summaries_df, additional_articles_df=None, output_pa
         </main>
         
         <footer>
-            <p>Generated automatically with Claude AI â€¢ {len(summaries_df)} articles analyzed</p>
+            <p>Generated automatically with Claude AI {len(summaries_df)} articles analyzed</p>
             <p><a href="https://github.com/nicolasgut/motorsport-digest" target="_blank">View on GitHub</a></p>
         </footer>
     </div>
