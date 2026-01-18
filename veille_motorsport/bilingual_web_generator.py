@@ -1,6 +1,6 @@
 """
 Bilingual Web Generator
-Génère page HTML avec sélecteur FR/EN
+GÃ©nÃ¨re page HTML avec sÃ©lecteur FR/EN
 """
 
 from datetime import datetime
@@ -8,7 +8,7 @@ from datetime import datetime
 
 def generate_bilingual_html(summaries_df, additional_articles_df=None, output_path='docs/latest.html'):
     """
-    Générer page HTML bilingue avec sélecteur
+    GÃ©nÃ©rer page HTML bilingue avec sÃ©lecteur
     
     Args:
         summaries_df: DataFrame avec 'summary_fr' et 'summary_en'
@@ -16,7 +16,7 @@ def generate_bilingual_html(summaries_df, additional_articles_df=None, output_pa
     """
     
     if summaries_df.empty:
-        print("⚠️  No summaries to generate HTML")
+        print("âš ï¸  No summaries to generate HTML")
         return False
     
     # Mapping langues sources
@@ -33,7 +33,7 @@ def generate_bilingual_html(summaries_df, additional_articles_df=None, output_pa
     if 'score' in summaries_df.columns:
         summaries_df = summaries_df.sort_values('score', ascending=False)
     
-    # Date génération
+    # Date gÃ©nÃ©ration
     generated_date = datetime.now().strftime('%Y-%m-%d')
     generated_time = datetime.now().strftime('%H:%M')
     
@@ -218,30 +218,30 @@ def generate_bilingual_html(summaries_df, additional_articles_df=None, output_pa
 <body>
     <div class="container">
         <header>
-            <h1>🏎️ Motorsport Digest</h1>
+            <h1>ðŸŽï¸ Motorsport Digest</h1>
             <p class="date">{generated_date} - {generated_time}</p>
         </header>
         
         <!-- LANGUAGE SELECTOR -->
-        <div class="language-selector">
-            <button onclick="switchLanguage('fr')" id="btn-fr" class="active">🇫🇷 Français</button>
-            <button onclick="switchLanguage('en')" id="btn-en">🇬🇧 English</button>
-        </div>
+        <!-- <div class="language-selector">
+            <button onclick="switchLanguage('fr')" id="btn-fr" class="active">ðŸ‡«ðŸ‡· FranÃ§ais</button>
+            <button onclick="switchLanguage('en')" id="btn-en">ðŸ‡¬ðŸ‡§ English</button>
+        </div> -->
         
         <main>
 """
     
-        # Générer articles
+        # GÃ©nÃ©rer articles
     for idx, row in summaries_df.iterrows():
         score = int(row.get('score', 0))
         source = row.get('source', 'Unknown')
         
-        # Récupérer et formater la date de publication
+        # RÃ©cupÃ©rer et formater la date de publication
         published_date = row.get('published', None)
         if published_date:
             try:
                 if isinstance(published_date, str):
-                    # Parser la date depuis différents formats possibles
+                    # Parser la date depuis diffÃ©rents formats possibles
                     from dateutil import parser
                     date_obj = parser.parse(published_date)
                 else:
@@ -252,9 +252,9 @@ def generate_bilingual_html(summaries_df, additional_articles_df=None, output_pa
         else:
             date_display = 'N/A'
         
-        # NOUVEAU : Déterminer langue source
+        # NOUVEAU : DÃ©terminer langue source
         source_key = source.lower().replace('_', '').replace('-', '')
-        source_lang = 'EN'  # Défaut
+        source_lang = 'EN'  # DÃ©faut
         for key, lang in source_languages.items():
             if key.replace('_', '') in source_key:
                 source_lang = lang
@@ -267,7 +267,7 @@ def generate_bilingual_html(summaries_df, additional_articles_df=None, output_pa
         html += f"""
             <article class="article">
                 <div class="article-header">
-                    <!-- MODIFIÉ : Titre FR (visible en mode FR) -->
+                    <!-- MODIFIÃ‰ : Titre FR (visible en mode FR) -->
                     <a href="{row['url']}" target="_blank" class="article-title lang-fr">
                         {title_fr}
                     </a>
@@ -279,7 +279,7 @@ def generate_bilingual_html(summaries_df, additional_articles_df=None, output_pa
                 </div>
                 
                 <div class="article-meta">
-                    <strong>Source:</strong> {source}, {source_lang} • <span class="article-score">Score: {score}</span>
+                    <strong>Source:</strong> {source}, {source_lang} â€¢ <span class="article-score">Score: {score}</span>
                 </div>
                 
                 <div class="article-summary lang-fr">
@@ -299,10 +299,10 @@ def generate_bilingual_html(summaries_df, additional_articles_df=None, output_pa
         html += """
         <section style="margin-top: 60px; padding-top: 40px; border-top: 3px solid #e74c3c;">
             <h2 class="lang-fr" style="text-align: center; color: #2c3e50; margin-bottom: 30px;">
-                📰 Plus d'informations
+                ðŸ“° Plus d'informations
             </h2>
             <h2 class="lang-en" style="text-align: center; color: #2c3e50; margin-bottom: 30px;">
-                📰 More News
+                ðŸ“° More News
             </h2>
             
             <ul style="list-style: none; padding: 0;">
@@ -341,7 +341,7 @@ def generate_bilingual_html(summaries_df, additional_articles_df=None, output_pa
         </main>
         
         <footer>
-            <p>Generated automatically with Claude AI • {len(summaries_df)} articles analyzed</p>
+            <p>Generated automatically with Claude AI â€¢ {len(summaries_df)} articles analyzed</p>
             <p><a href="https://github.com/nicolasgut/motorsport-digest" target="_blank">View on GitHub</a></p>
         </footer>
     </div>
@@ -356,13 +356,14 @@ def generate_bilingual_html(summaries_df, additional_articles_df=None, output_pa
             document.getElementById('btn-en').classList.remove('active');
             document.getElementById('btn-' + lang).classList.add('active');
             
-            // Save preference
-            localStorage.setItem('preferredLanguage', lang);
+            // Save preference in URL hash (no localStorage needed)
+            window.location.hash = lang;
         }}
         
-        // Load saved preference
+        // Load preference from URL hash
         window.addEventListener('DOMContentLoaded', () => {{
-            const savedLang = localStorage.getItem('preferredLanguage') || 'fr';
+            const hash = window.location.hash.replace('#', '');
+            const savedLang = (hash === 'en' || hash === 'fr') ? hash : 'fr';
             if (savedLang === 'en') {{
                 switchLanguage('en');
             }}
@@ -376,7 +377,7 @@ def generate_bilingual_html(summaries_df, additional_articles_df=None, output_pa
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(html)
     
-    print(f"✅ Bilingual HTML generated: {output_path}\n")
+    print(f"âœ… Bilingual HTML generated: {output_path}\n")
     return True
 
 
@@ -398,7 +399,7 @@ if __name__ == "__main__":
         ],
         'summary_fr': [
             'Ferrari annonce un partenariat majeur avec HP pour 2026.',
-            'McLaren dévoile sa stratégie technique pour 2026.'
+            'McLaren dÃ©voile sa stratÃ©gie technique pour 2026.'
         ],
         'summary_en': [
             'Ferrari announces major partnership with HP for 2026.',
@@ -409,4 +410,4 @@ if __name__ == "__main__":
     })
     
     generate_bilingual_html(test_data, 'test_bilingual.html')
-    print("✅ Test file created: test_bilingual.html")
+    print("âœ… Test file created: test_bilingual.html")
