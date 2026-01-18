@@ -218,7 +218,8 @@ def generate_bilingual_html(summaries_df, additional_articles_df=None, output_pa
 <body>
     <div class="container">
         <header>
-            <h1>ðŸŽï¸ Motorsport Digest</h1>
+            <h1>Motorsport Digest</h1>
+            <h2> Un projet par Nicolas Gut</h2>
             <p class="date">{generated_date} - {generated_time}</p>
         </header>
         
