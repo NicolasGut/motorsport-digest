@@ -1,273 +1,55 @@
-# ============================================
-# MOTORSPORT DIGEST - .gitignore
-# ============================================
-
-# ============================================
-# SENSITIVE FILES (Never commit!)
-# ============================================
-
-# Environment variables (contains API keys!)
-.env
-.env.local
-.env.*.local
-
-# API Keys (just in case)
-*.key
-secrets/
-credentials/
-
-# ============================================
-# PYTHON
-# ============================================
-
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
-
-# Distribution / packaging
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# Virtual environments
 venv/
 env/
 ENV/
-env.bak/
-venv.bak/
-.venv/
+.venv
 
-# PyInstaller
-*.manifest
-*.spec
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
+# Environment variables
+.env
+.env.local
 
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-# pyenv
-.python-version
-
-# Celery
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# ============================================
-# DATABASE
-# ============================================
-
-# SQLite databases (comment out if you want to commit them)
+# Database (SQLite)
 *.db
 *.sqlite
 *.sqlite3
+data/*.db
+data/*.sqlite
 
-# Database backups
-*.db-backup
-*.db.bak
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# ============================================
-# LOGS & TEMPORARY FILES
-# ============================================
+# OS
+.DS_Store
+Thumbs.db
 
 # Logs
-logs/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-.pnpm-debug.log*
+logs/
 
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
+# Test coverage
+htmlcov/
+.coverage
+.pytest_cache/
 
 # Temporary files
 tmp/
 temp/
 *.tmp
-*.temp
-*.swp
-*.swo
-*~
 
-# ============================================
-# OPERATING SYSTEM
-# ============================================
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-._*
-.Spotlight-V100
-.Trashes
-
-# Windows
-Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
-*.stackdump
-[Dd]esktop.ini
-$RECYCLE.BIN/
-*.lnk
-
-# Linux
-.directory
-.Trash-*
-
-# ============================================
-# IDEs & EDITORS
-# ============================================
-
-# VSCode
-.vscode/
-*.code-workspace
-
-# PyCharm
-.idea/
-*.iml
-*.iws
-*.ipr
-
-# Sublime Text
-*.sublime-project
-*.sublime-workspace
-
-# Vim
-*.swp
-*.swo
-*~
-
-# Emacs
-*~
-\#*\#
-/.emacs.desktop
-/.emacs.desktop.lock
-*.elc
-auto-save-list
-tramp
-
-# ============================================
-# PROJECT SPECIFIC
-# ============================================
-
-# Test data (if any)
-test_data/
-sample_articles/
-
-# Cache files
-.cache/
-*.cache
-
-# Backup files
-backup/
-*.backup
-
-# Output files (keep docs/ for GitHub Pages)
-# docs/  # Uncomment if you don't want to commit generated HTML
-
-# Drafts
-drafts/
-*.draft
-
-# ============================================
-# OPTIONAL (uncomment if needed)
-# ============================================
-
-# Node modules (if you add JavaScript later)
-# node_modules/
-# package-lock.json
-# yarn.lock
-
-# Docker
-# .dockerignore
-# docker-compose.override.yml
-
-# CI/CD (keep .github/workflows)
-# .github/workflows/
-
-# ============================================
-# NOTES
-# ============================================
-
-# This file prevents sensitive data and unnecessary files
-# from being committed to Git.
-#
-# MOST IMPORTANT:
-# - .env (contains API keys!)
-# - *.db (may contain personal data)
-# - logs/ (may contain debug info)
-#
-# KEEP IN REPO:
-# - docs/ (needed for GitHub Pages)
-# - requirements.txt
-# - README.md
-# - .github/workflows/
+# Archives
+*.zip
+*.tar.gz

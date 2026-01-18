@@ -1,101 +1,71 @@
 name: Weekly Motorsport Digest
 
 on:
-  # Exécution automatique tous les dimanches à 18h UTC
   schedule:
-    - cron: '0 18 * * 0'  # 18h UTC = 19h Paris hiver, 20h Paris été
+    # Tous les dimanches à 18h UTC (19h Paris hiver, 20h été)
+    - cron: '0 18 * * 0'
   
-  # Permettre exécution manuelle
+  # Permet lancement manuel depuis GitHub UI
   workflow_dispatch:
+
+# CRITICAL: Permissions pour permettre au bot de pusher
+permissions:
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
   generate-digest:
     runs-on: ubuntu-latest
     
     steps:
-    # ============================================
-    # 1. CHECKOUT REPOSITORY
-    # ============================================
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Récupérer tout l'historique
-    
-    # ============================================
-    # 2. SETUP PYTHON
-    # ============================================
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-        cache: 'pip'  # Cache des dépendances
-    
-    # ============================================
-    # 3. INSTALL DEPENDENCIES
-    # ============================================
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    
-    # ============================================
-    # 4. VERIFY ENVIRONMENT
-    # ============================================
-    - name: Verify installation
-      run: |
-        python --version
-        pip list
-        echo "✅ Dependencies installed"
-    
-    # ============================================
-    # 5. RUN MAIN PIPELINE
-    # ============================================
-    - name: Generate weekly digest
-      env:
-        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        # Désactiver proxies qui interfèrent avec Anthropic client
-        NO_PROXY: "*"
-      run: |
-        echo "🏎️  Starting digest generation..."
-        
-        # Unset proxy variables before running
-        unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy
-        
-        # Run with wrapper for better error handling
-        python run_github_action.py
-        
-        echo "✅ Pipeline completed"
-    
-    # ============================================
-    # 6. COMMIT & PUSH RESULTS
-    # ============================================
-    - name: Commit and push digest
-      run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "GitHub Actions Bot"
-        
-        # Ajouter fichiers générés
-        git add docs/
-        git add data/veille_motorsport.db || true  # Base de données (optionnel)
-        
-        # Commit avec date
-        DIGEST_DATE=$(date +'%Y-%m-%d %H:%M')
-        git commit -m "📰 Weekly digest: $DIGEST_DATE" || echo "No changes to commit"
-        
-        # Push
-        git push
-    
-    # ============================================
-    # 7. NOTIFICATION (optionnel)
-    # ============================================
-    - name: Success notification
-      if: success()
-      run: |
-        echo "✅ Digest successfully generated and published!"
-        echo "🌐 View at: https://${{ github.repository_owner }}.github.io/motorsport-digest/"
-    
-    - name: Failure notification
-      if: failure()
-      run: |
-        echo "❌ Digest generation failed!"
-        echo "Check logs above for details"
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: 📦 Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: 🏎️ Generate weekly digest
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python run_github_action.py
+      
+      - name: 📊 Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Ajouter uniquement les fichiers générés dans docs/
+          git add docs/*.html
+          git add docs/index.html || true
+          
+          # Commit si changements
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "📰 Weekly digest: $(date +'%Y-%m-%d %H:%M')"
+            git push
+          fi
+      
+      - name: ✅ Success notification
+        if: success()
+        run: |
+          echo "✅ Digest généré et publié avec succès!"
+          echo "🌐 Consultez: https://NicolasGut.github.io/motorsport-digest/"
+      
+      - name: ❌ Failure notification
+        if: failure()
+        run: |
+          echo "❌ Échec de la génération du digest"
+          echo "Consultez les logs ci-dessus pour plus de détails"
