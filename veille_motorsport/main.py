@@ -159,7 +159,8 @@ def generate_weekly_digest(
         print(f"  âœ… Kept {len(filtered_df)} articles with score >= {min_relevance_score}")
         
         # DÃ‰DUPLICATION (mÃªme news de sources diffÃ©rentes)
-        filtered_df = deduplicate_articles(filtered_df, similarity_threshold=0.7)
+        # Déduplication avec seuil abaissé pour détecter plus de doublons
+        filtered_df = deduplicate_articles(filtered_df, similarity_threshold=0.65)
         print()
         
         if filtered_df.empty:
